@@ -1,3 +1,7 @@
+## 1.9.0
+- Composição corporal: IMC (pela altura do Plano), nível de obesidade (OMS) e TMB (da balança ou calculada pela massa magra).
+- Campo de altura no Plano e de TMB no registro de peso.
+
 ## 1.8.0
 - Atividade e Composição corporal com cápsulas separando cada número.
 

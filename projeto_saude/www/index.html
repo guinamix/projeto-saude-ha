@@ -390,6 +390,10 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
 .cp-tile.on{border-color:rgba(181,212,90,.7)!important}
 .cp-tile.on .sv-big{color:var(--ink)}
 .sv-stats > div .eyebrow,.cp-tile .eyebrow{font-size:.78rem;color:var(--teal)!important}
+.cp-fixo{cursor:default}
+.cp-grid{grid-template-columns:repeat(3,1fr)!important}
+@media (min-width:1300px){.cp-grid{grid-template-columns:repeat(4,1fr)!important}}
+@media (max-width:560px){.cp-grid{grid-template-columns:repeat(2,1fr)!important}}
 </style>
 
 <div id="importando" role="status" aria-live="polite" hidden><div class="imp-card"><span class="imp-spin" aria-hidden="true"></span><span>Importando dados do iPhone…</span></div></div>
@@ -528,6 +532,7 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
       <label>Massa magra (kg)<input type="number" id="peso-magra" name="magra" step="0.1" min="20" max="200" inputmode="decimal" placeholder="opcional"></label>
       <label>Gordura visceral<input type="number" id="peso-visc" name="visceral" step="0.5" min="1" max="60" inputmode="decimal" placeholder="opcional"></label>
       <label>Água (%)<input type="number" id="peso-agua" name="agua" step="0.1" min="20" max="80" inputmode="decimal" placeholder="opcional"></label>
+      <label>TMB (kcal)<input type="number" id="peso-tmb" name="tmb" step="1" min="800" max="4000" inputmode="numeric" placeholder="opcional"></label>
       <label class="full">Observação<textarea id="peso-obs" name="obs" maxlength="400" placeholder="Ex.: pesei depois do café, semana com churrasco"></textarea></label>
       <button class="btn" type="submit">Salvar peso</button>
     </form>
@@ -582,6 +587,7 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
         <label style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="pl-mj" style="width:auto"> Faço tratamento com Mounjaro</label>
         <label class="mj">Data da 1ª aplicação<input type="date" id="pl-inicio" name="inicio"></label>
         <label>Peso inicial (kg)<input type="number" id="pl-peso" name="pesoInicial" step="0.1" inputmode="decimal"></label>
+        <label>Altura (cm)<input type="number" id="pl-altura" name="altura" step="1" min="100" max="230" inputmode="numeric" placeholder="Ex.: 179"></label>
         <label>Meta de peso (kg)<input type="number" id="pl-meta" name="meta" step="0.1" inputmode="decimal" placeholder="Ex.: 115"></label>
         <label>Dia da pesagem
           <select id="pl-pesagem" name="diaPesagem"><option value="1">Segunda</option><option value="2">Terça</option><option value="3">Quarta</option><option value="4">Quinta</option><option value="5">Sexta</option><option value="6">Sábado</option><option value="0">Domingo</option></select>
@@ -1230,7 +1236,7 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
     if(!db){ msg('Abra esta página logado no Claude para salvar.',true); return; }
     const fd=new FormData(f), tipo=f.dataset.tipo;
     const doc={tipo, data:fd.get('data'), criadoEm:Date.now()};
-    if(tipo==='peso'){ doc.kg=num(fd.get('kg')); ['gordura','musculo','magra','visceral','agua'].forEach(k=>{ const v=num(fd.get(k)); if(v) doc[k]=v; }); const o=(fd.get('obs')||'').trim(); if(o) doc.obs=o; }
+    if(tipo==='peso'){ doc.kg=num(fd.get('kg')); ['gordura','musculo','magra','visceral','agua','tmb'].forEach(k=>{ const v=num(fd.get(k)); if(v) doc[k]=v; }); const o=(fd.get('obs')||'').trim(); if(o) doc.obs=o; }
     if(tipo==='aplicacao'){ doc.dose=Number(fd.get('dose')); doc.local=fd.get('local'); }
     if(tipo==='treino'){ doc.modalidade=fd.get('modalidade'); doc.minutos=num(fd.get('minutos')); const o=(fd.get('obs')||'').trim(); if(o) doc.obs=o; }
     if(tipo==='diario'){ doc.efeitos=[...f.querySelectorAll('#di-efeitos input:checked')].map(i=>i.value); const n=(fd.get('nota')||'').trim(); if(n) doc.nota=n; }
@@ -1245,7 +1251,7 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
   $('#f-plano').addEventListener('submit',async ev=>{
     ev.preventDefault();
     if(!db) return;
-    const novo={inicio:$('#pl-inicio').value||'', pesoInicial:num($('#pl-peso').value)||null}; if(!novo.pesoInicial) delete novo.pesoInicial; const mt=num($('#pl-meta').value); if(mt) novo.meta=mt; novo.projetoInicio=$('#pl-projeto').value||''; novo.diaPesagem=Number($('#pl-pesagem').value); novo.usaMounjaro=$('#pl-mj').checked;
+    const novo={inicio:$('#pl-inicio').value||'', pesoInicial:num($('#pl-peso').value)||null}; if(!novo.pesoInicial) delete novo.pesoInicial; const mt=num($('#pl-meta').value); if(mt) novo.meta=mt; const alt=num($('#pl-altura').value); if(alt) novo.altura=alt; novo.projetoInicio=$('#pl-projeto').value||''; novo.diaPesagem=Number($('#pl-pesagem').value); novo.usaMounjaro=$('#pl-mj').checked;
     try{ await db.doc('config/plano').set(novo); msg('Plano salvo.'); }catch(e){ msg('Não foi possível salvar o plano.',true); }
   });
 
@@ -1268,7 +1274,7 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
     db.doc('config/plano').onSnapshot(s=>{
       plano = s.exists ? Object.assign({}, s.data()) : {};
       filtrarInicio(); planoOk=true; tentarHash();
-      $('#pl-inicio').value=plano.inicio||''; $('#pl-peso').value=plano.pesoInicial||''; $('#pl-meta').value=plano.meta||''; $('#pl-projeto').value=plano.projetoInicio||''; $('#pl-pesagem').value=String(plano.diaPesagem!=null?plano.diaPesagem:1); $('#pl-mj').checked=plano.usaMounjaro!==false; document.body.classList.toggle('sem-mj', plano.usaMounjaro===false);
+      $('#pl-inicio').value=plano.inicio||''; $('#pl-peso').value=plano.pesoInicial||''; $('#pl-meta').value=plano.meta||''; $('#pl-altura').value=plano.altura||''; $('#pl-projeto').value=plano.projetoInicio||''; $('#pl-pesagem').value=String(plano.diaPesagem!=null?plano.diaPesagem:1); $('#pl-mj').checked=plano.usaMounjaro!==false; document.body.classList.toggle('sem-mj', plano.usaMounjaro===false);
       render();
     }, ()=>{});
   })();
@@ -1381,29 +1387,45 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
       <div class="sn-leg">${segs.map(x=>`<div><span class="k-${x[2]}">${x[0]}</span><b>${x[2]==='acord'?Math.round(x[1])+' min':hhmm(x[1])}</b></div>`).join('')}</div>
       <div class="sn-bars" aria-label="Horas dormidas nas últimas 7 noites">${barras}</div>${foot}`;
   }
-  const CP=[['gordura','Gordura','%',-1],['musculo','Músculo',' kg',1],['magra','Massa magra',' kg',1],['visceral','Visceral','',-1],['agua','Água','%',1]];
-  let cpSel='gordura';
+  const CP=[['imc','IMC','',-1],['gordura','Gordura corporal','%',-1],['nivel','Nível de obesidade','',0],['tmb','TMB',' kcal',0],['musculo','Músculo',' kg',1],['magra','Massa magra',' kg',1],['visceral','Visceral','',-1],['agua','Água','%',1]];
+  let cpSel='imc';
+  function nivelObes(imc){ if(imc==null) return null; return imc<18.5?'Abaixo do peso':imc<25?'Normal':imc<30?'Sobrepeso':imc<35?'Obesidade grau I':imc<40?'Obesidade grau II':'Obesidade grau III'; }
+  function corpoDe(r){
+    const o=Object.assign({},r); const alt=Number(plano.altura)||0;
+    if(alt&&r.kg) o.imc=Math.round(r.kg/Math.pow(alt/100,2)*10)/10;
+    if(!o.tmb){ const lbm=r.magra||(r.kg&&r.gordura?r.kg*(1-r.gordura/100):0); if(lbm) o.tmb=Math.round(370+21.6*lbm); }
+    o.nivel=nivelObes(o.imc);
+    return o;
+  }
   function renderCorpo(){
     const box=$('#cpBody'); if(!box) return;
-    const bio=registros.filter(r=>r.tipo==='peso'&&CP.some(c=>r[c[0]])).sort((a,b)=>a.data.localeCompare(b.data));
-    if(!bio.length){ $('#cpNote').textContent='da balança'; box.innerHTML='<p class="empty">Aparece quando você registrar gordura, músculo e os outros dados da balança.</p>'; return; }
-    $('#cpNote').textContent=bio.length+(bio.length===1?' medição':' medições')+' · última '+fmtCurta(bio[bio.length-1].data);
+    const todos=registros.filter(r=>r.tipo==='peso').map(corpoDe).sort((a,b)=>a.data.localeCompare(b.data));
+    const bio=todos.filter(r=>CP.some(c=>c[0]!=='nivel'&&r[c[0]]));
+    if(!bio.length){ $('#cpNote').textContent='da balança'; box.innerHTML='<p class="empty">Aparece quando você registrar o peso. Coloque sua altura no Plano para calcular o IMC.</p>'; return; }
+    const bioN=bio.filter(r=>r.gordura||r.musculo||r.magra).length;
+    $('#cpNote').textContent=bioN+(bioN===1?' medição completa':' medições completas')+' · último peso '+fmtCurta(bio[bio.length-1].data);
     const fmt=v=>String(Math.round(v*10)/10).replace('.',',');
-    const disp=CP.filter(c=>bio.some(r=>r[c[0]])); if(!disp.some(c=>c[0]===cpSel)) cpSel=disp[0][0];
+    const disp=CP.filter(c=>bio.some(r=>r[c[0]])); if(!disp.some(c=>c[0]===cpSel&&c[0]!=='nivel')) cpSel=(disp.find(c=>c[0]!=='nivel')||disp[0])[0];
     const tiles=disp.map(([k,nome,u,bom])=>{
       const serie=bio.filter(r=>r[k]); const ult=serie[serie.length-1], pri=serie[0];
+      if(k==='nivel'){ const n=ult.nivel; const cls=/III|II/.test(n)?'warn':/grau I|Sobre/.test(n)?'warn':'ok';
+        return `<div class="cp-tile cp-fixo"><span class="eyebrow">${nome}</span><span class="sv-big" style="font-size:1.05rem">${n}</span><span class="note">pelo IMC (OMS)</span></div>`; }
       let pill='';
       if(serie.length>1){ const d=ult[k]-pri[k]; const z=Math.abs(d)<0.05; const ok=d*bom>0;
-        pill=`<span class="pill ${z?'flat':ok?'ok':'warn'}">${z?'0':(d<0?'−':'+')+fmt(Math.abs(d))}${u}</span>`; }
+        pill=`<span class="pill ${z||!bom?'flat':ok?'ok':'warn'}">${z?'0':(d<0?'−':'+')+fmt(Math.abs(d))}${u}</span>`; }
       let extra='';
       if(k==='gordura'&&ult.kg) extra=`<span class="note num">${fmt(ult.kg*ult.gordura/100)} kg de gordura</span>`;
-      return `<button type="button" class="cp-tile${k===cpSel?' on':''}" data-k="${k}"><span class="eyebrow">${nome}</span><span class="sv-big num">${fmt(ult[k])}${u}</span>${extra}${pill}</button>`; }).join('');
+      if(k==='tmb') extra=`<span class="note">${ult.tmbBalanca||(registros.find(x=>x.id===ult.id)||{}).tmb?'da balança':'calculada pela massa magra'}</span>`;
+      if(k==='imc') extra=`<span class="note">altura ${String(plano.altura).replace('.',',')} cm</span>`;
+      const val=k==='tmb'?Math.round(ult[k]).toLocaleString('pt-BR'):fmt(ult[k]);
+      return `<button type="button" class="cp-tile${k===cpSel?' on':''}" data-k="${k}"><span class="eyebrow">${nome}</span><span class="sv-big num">${val}${u}</span>${extra}${pill}</button>`; }).join('');
     const c=CP.find(x=>x[0]===cpSel), serie=bio.filter(r=>r[cpSel]);
-    box.innerHTML=`<div class="cp-grid">${tiles}</div><div class="cp-chart">${miniGrafico(serie.map(r=>({d:r.data,v:r[cpSel]})), c[2], c[1])}</div>`;
-    box.querySelectorAll('.cp-tile').forEach(b=>b.addEventListener('click',()=>{ cpSel=b.dataset.k; renderCorpo(); }));
+    const aviso=plano.altura?'':'<p class="note">Coloque sua altura em <b>Plano do tratamento</b> para ver o IMC e o nível de obesidade.</p>';
+    box.innerHTML=`<div class="cp-grid">${tiles}</div>${aviso}<div class="cp-chart">${miniGrafico(serie.map(r=>({d:r.data,v:r[cpSel]})), c[2], c[1])}</div>`;
+    box.querySelectorAll('button.cp-tile').forEach(b=>b.addEventListener('click',()=>{ cpSel=b.dataset.k; renderCorpo(); }));
   }
   function miniGrafico(pts, u, nome){
-    if(pts.length<2) return `<p class="empty">Gráfico de ${nome.toLowerCase()} a partir da 2ª medição completa.</p>`;
+    if(pts.length<2) return `<p class="empty">Gráfico de ${nome.toLowerCase()} a partir da 2ª medição.</p>`;
     const W=520,H=150,L=36,R=14,T=22,B=26;
     let lo=Math.min(...pts.map(p=>p.v)), hi=Math.max(...pts.map(p=>p.v)); if(hi-lo<2){ const m=(hi+lo)/2; lo=m-1; hi=m+1; }
     lo=Math.floor(lo-0.5); hi=Math.ceil(hi+0.5);
