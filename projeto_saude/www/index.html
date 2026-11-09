@@ -368,6 +368,15 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
 @keyframes psEntrar{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .wrap{animation:psEntrar .35s ease-out both}
 @media (prefers-reduced-motion:reduce){.wrap{animation:none}}
+
+.topo-dir{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end}
+.btn-sync{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px 0 12px;border-radius:999px;background:rgba(181,212,90,.18);color:var(--lime);font-weight:600;font-size:.88rem;text-decoration:none;transition:background .2s}
+.btn-sync[hidden]{display:none}
+.btn-sync:hover{background:rgba(181,212,90,.28)}
+.btn-sync svg{width:20px;height:20px;fill:currentColor}
+.btn-sync.girando svg{animation:psGira 1s linear infinite}
+@keyframes psGira{to{transform:rotate(360deg)}}
+@media (max-width:700px){.topo-dir{width:100%;justify-content:space-between}}
 </style>
 
 <div id="importando" role="status" aria-live="polite" hidden><div class="imp-card"><span class="imp-spin" aria-hidden="true"></span><span>Importando dados do iPhone…</span></div></div>
@@ -386,7 +395,7 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
           <p class="hello"><span id="nomeUser"></span><span id="diaProjeto"></span></p>
         </div>
       </div>
-      <p class="status" id="status">Carregando seus registros…</p>
+      <div class="topo-dir"><p class="status" id="status">Carregando seus registros…</p><a class="btn-sync" id="btnSync" href="#" target="_top" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12,18A6,6 0 0,1 6,12C6,11 6.25,10.03 6.7,9.2L5.24,7.74C4.46,8.97 4,10.43 4,12A8,8 0 0,0 12,20V23L16,19L12,15M12,4V1L8,5L12,9V6A6,6 0 0,1 18,12C18,13 17.75,13.97 17.3,14.8L18.76,16.26C19.54,15.03 20,13.57 20,12A8,8 0 0,0 12,4Z"/></svg><span>Atualizar do iPhone</span></a></div>
     </header>
     <div class="stats">
       <div class="stat">
@@ -1631,5 +1640,19 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
   }
   function iniciar(){ solto(); temaHA(); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',iniciar); else iniciar();
+})();
+</script>
+<script>
+(function(){
+  const ua=navigator.userAgent||'';
+  const ios=/iPhone|iPad|iPod/i.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
+  const b=document.getElementById('btnSync'); if(!b||!ios) return;
+  let volta='';
+  try{ const top=window.top.location; if(/Home Assistant|HomeAssistant/i.test(ua)) volta='homeassistant://navigate'+top.pathname; else volta=top.href; }catch(e){}
+  let url='shortcuts://run-shortcut?name='+encodeURIComponent('Atualizar Projeto Saúde');
+  if(volta) url='shortcuts://x-callback-url/run-shortcut?name='+encodeURIComponent('Atualizar Projeto Saúde')+'&x-success='+encodeURIComponent(volta)+'&x-error='+encodeURIComponent(volta);
+  b.href=url; b.hidden=false;
+  b.addEventListener('click',()=>{ b.classList.add('girando'); b.querySelector('span').textContent='Atualizando…'; setTimeout(()=>{ b.classList.remove('girando'); b.querySelector('span').textContent='Atualizar do iPhone'; },20000); });
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden && window.__haRefresh) setTimeout(window.__haRefresh,1500); });
 })();
 </script>

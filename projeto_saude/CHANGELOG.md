@@ -1,3 +1,6 @@
+## 1.5.0
+- Botão "Atualizar do iPhone" no topo (só aparece no iPhone/iPad): roda o atalho e volta para o Projeto Saúde já atualizado.
+
 ## 1.4.0
 - Mesma largura, margens, altura do topo e bordas do painel Início.
 - Entrada suave ao abrir e fundo carregado na hora, sem piscar.
