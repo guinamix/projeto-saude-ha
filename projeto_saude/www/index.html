@@ -266,6 +266,34 @@ details[open] summary::after{transform:rotate(-135deg) translateY(-3px)}
 .btn.ghost.dl{height:40px;padding:0 16px;font-size:.88rem}
 @media (max-width:480px){ul.hist li{grid-template-columns:1fr auto}ul.hist li .when{grid-column:1/-1}.hero{padding:18px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ===== Tema Home Assistant (escuro, cartões translúcidos, verde-oliva) ===== */
+:root,:root[data-theme],:root:not([data-theme="light"]){
+  --bg:rgba(255,255,255,.07); --surface:rgba(30,33,31,.72); --ink:#F2F3EE; --muted:#AEB3AB; --line:rgba(255,255,255,.10);
+  --lime:#B5D45A; --lime-soft:rgba(181,212,90,.16); --teal:#B9CF95;
+  --dark:rgba(0,0,0,.30); --on-dark:#F2F3EE; --dark-muted:#AEB3AB;
+  --ok:#A8D18A; --warn:#E3B567; --bad:#EF8A74; color-scheme:dark}
+html{background:#2d3833}
+body{background:linear-gradient(180deg,#59625f 0%,#46524d 38%,#34423a 70%,#26322b 100%) fixed;min-height:100vh}
+.panel,section.panel,.sono-panel,#importando .imp-card{background:var(--surface);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.06);box-shadow:0 6px 24px rgba(0,0,0,.18)}
+.hero{background:var(--surface);color:var(--ink);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.06);box-shadow:0 6px 24px rgba(0,0,0,.18)}
+.hero .status{color:var(--muted)}
+.hello{color:var(--muted)}
+.hello #diaProjeto{color:var(--ink)}
+.avatar{border-color:rgba(255,255,255,.85);background:#3a4540;color:var(--lime)}
+.avatar-edit{background:#2a302c;border-color:rgba(255,255,255,.85)}
+.stat{background:rgba(255,255,255,.07);color:var(--ink);border:1px solid rgba(255,255,255,.05)}
+.stat .eyebrow{color:var(--teal)}
+.stat .sub{color:var(--muted)}
+.stat .quick{color:var(--lime)}
+.stat.dose{background:rgba(0,0,0,.28)}
+.btn{color:#1b1e1b}
+.btn.lime,.btn.lime:hover{background:var(--lime);color:#1b1e1b}
+.btn.ghost{color:var(--ink);border-color:rgba(255,255,255,.16)}
+input,select,textarea{background-color:rgba(0,0,0,.22)!important;color:var(--ink)!important;border-color:rgba(255,255,255,.12)!important}
+.pill.ok{background:rgba(181,212,90,.18);color:var(--lime)}
+.quick-row .btn.ghost{color:var(--ink);border-color:rgba(255,255,255,.16)}
+.pill.flat{background:rgba(255,255,255,.12);color:var(--ink)}
 </style>
 
 <div id="importando" role="status" aria-live="polite" hidden><div class="imp-card"><span class="imp-spin" aria-hidden="true"></span><span>Importando dados do iPhone…</span></div></div>
