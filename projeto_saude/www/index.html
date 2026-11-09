@@ -331,6 +331,22 @@ input,select,textarea{border-radius:14px!important}
 details summary{justify-content:flex-start}
 details summary::after{margin-left:auto}
 .marco-lb{text-transform:none;letter-spacing:0;font-size:.85rem;color:var(--ink)}
+
+/* ===== v1.3: layout como o Início (títulos fora, cartões soltos, papel de parede do HA) ===== */
+body.ha-bg{background-attachment:fixed!important}
+.hero{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.hero header{background:var(--surface);border-radius:var(--r);padding:16px 18px;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.stat{background:var(--surface)!important;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.stat.dose{background:var(--surface)!important}
+section.panel.solto{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;gap:10px}
+section.panel.solto > .panel-head,section.panel.solto > h2{padding:0 4px}
+section.panel.solto > .panel-head .note{color:rgba(255,255,255,.72)}
+.cartao{background:var(--surface);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:14px;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);flex:1;min-width:0}
+.duo > section.panel.solto{display:flex;flex-direction:column}
+.sv-stats > div,.cp-tile{background:transparent!important;padding-left:2px;padding-right:2px}
+.cp-tile{border:0!important;border-bottom:2px solid transparent!important;border-radius:0!important}
+.cp-tile.on{border-bottom-color:var(--lime)!important}
+.cp-tile.on .sv-big{color:var(--lime)}
 </style>
 
 <div id="importando" role="status" aria-live="polite" hidden><div class="imp-card"><span class="imp-spin" aria-hidden="true"></span><span>Importando dados do iPhone…</span></div></div>
@@ -1557,5 +1573,42 @@ details summary::after{margin-left:auto}
     document.querySelectorAll('.stat > .eyebrow').forEach(el=>{ if(el.querySelector('.ic')) return; const t=el.textContent.trim().toLowerCase(); const k=t.includes('peso')?'peso':t.includes('mounjaro')?'agulha':'andar'; el.insertAdjacentHTML('afterbegin',ic(k,k==='peso')); });
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',aplicar); else aplicar();
+})();
+</script>
+<script>
+(function(){
+  function solto(){
+    document.querySelectorAll('section.panel').forEach(sec=>{
+      if(sec.classList.contains('solto')||sec.querySelector(':scope > details')) return;
+      const head=sec.querySelector(':scope > .panel-head')||sec.querySelector(':scope > h2'); if(!head) return;
+      const card=document.createElement('div'); card.className='cartao';
+      [...sec.children].filter(c=>c!==head).forEach(c=>card.appendChild(c));
+      sec.appendChild(card); sec.classList.add('solto');
+    });
+  }
+  async function temaHA(){
+    try{
+      const P=window.parent&&window.parent!==window?window.parent.document:null; if(!P) return;
+      const ha=P.querySelector('home-assistant'); if(!ha) return;
+      const cs=getComputedStyle(ha);
+      const v=n=>cs.getPropertyValue(n).trim();
+      let bg=v('--lovelace-background');
+      if(!bg && ha.hass && ha.hass.callWS){
+        try{
+          const cfg=await ha.hass.callWS({type:'lovelace/config'});
+          const vw=(cfg&&cfg.views||[]).find(x=>x.background)||{};
+          const b=vw.background;
+          if(typeof b==='string') bg=b;
+          else if(b&&b.image) bg=(b.alignment||'center')+' / '+(b.size||'cover')+' '+(b.repeat||'no-repeat')+' url("'+b.image+'") '+(b.attachment||'fixed');
+        }catch(e){}
+      }
+      if(bg){ document.body.style.background=bg; document.body.classList.add('ha-bg'); document.documentElement.style.background='#1c1c1c'; }
+      const card=v('--ha-card-background')||v('--card-background-color');
+      if(card) document.documentElement.style.setProperty('--surface',card);
+      const r=v('--ha-card-border-radius'); if(r) document.documentElement.style.setProperty('--r',r);
+    }catch(e){}
+  }
+  function iniciar(){ solto(); temaHA(); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',iniciar); else iniciar();
 })();
 </script>

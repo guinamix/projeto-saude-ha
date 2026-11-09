@@ -1,5 +1,5 @@
 name: Projeto Saúde
-version: "1.2.0"
+version: "1.3.0"
 slug: projeto_saude
 description: Acompanhamento de saúde (peso, caminhadas, sono e tratamento) com dados do Apple Watch e da balança, um painel por usuário.
 url: https://github.com/guinamix/projeto-saude-ha

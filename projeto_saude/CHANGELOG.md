@@ -1,3 +1,6 @@
+## 1.3.0
+- Layout igual ao painel Início: títulos fora dos cartões, cartões soltos sobre o fundo e uso do mesmo papel de parede e cor de cartão do tema do Home Assistant.
+
 ## 1.2.0
 - Visual ainda mais próximo do painel Início: fundo em degradê, cartões mais arredondados, títulos com ícones e textos sem caixa-alta.
 
