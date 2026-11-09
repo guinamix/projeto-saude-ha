@@ -1,3 +1,6 @@
+## 1.6.1
+- Log mais limpo: mostra só os envios do iPhone, com data e hora.
+
 ## 1.6.0
 - Removido o botão Atualizar do iPhone (a atualização passa a ser só pela automação do iPhone, em segundo plano).
 

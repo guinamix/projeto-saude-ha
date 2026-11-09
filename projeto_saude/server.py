@@ -279,7 +279,10 @@ class Base(BaseHTTPRequestHandler):
     server_version = "ProjetoSaude/1.0"
 
     def log_message(self, fmt, *args):
-        print("[%s] %s" % (self.address_string(), fmt % args))
+        msg = fmt % args
+        if "/api/rev" in msg or "/api/state" in msg:
+            return
+        print("%s [%s] %s" % (time.strftime("%d/%m %H:%M:%S"), self.address_string(), msg))
 
     def send(self, code, body, ctype="application/json; charset=utf-8"):
         if isinstance(body, (dict, list)):
