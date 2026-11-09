@@ -1,3 +1,6 @@
+## 1.9.1
+- Cápsulas da composição corporal todas do mesmo tamanho; aviso do gráfico menor.
+
 ## 1.9.0
 - Composição corporal: IMC (pela altura do Plano), nível de obesidade (OMS) e TMB (da balança ou calculada pela massa magra).
 - Campo de altura no Plano e de TMB no registro de peso.

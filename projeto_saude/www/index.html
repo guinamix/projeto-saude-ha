@@ -394,6 +394,16 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
 .cp-grid{grid-template-columns:repeat(3,1fr)!important}
 @media (min-width:1300px){.cp-grid{grid-template-columns:repeat(4,1fr)!important}}
 @media (max-width:560px){.cp-grid{grid-template-columns:repeat(2,1fr)!important}}
+
+/* v1.9.1: cápsulas iguais na composição */
+.cp-grid{grid-auto-rows:1fr;align-items:stretch}
+.cp-tile{height:100%;min-height:112px;justify-content:flex-start;overflow:hidden}
+.cp-tile .eyebrow{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;display:block}
+.cp-tile .sv-big{font-size:1.15rem!important;line-height:1.2}
+.cp-tile .note{font-size:.7rem;line-height:1.3}
+.cp-tile .pill{margin-top:auto}
+.cp-chart .empty{font-size:.78rem;padding:4px 2px 0;margin:0;color:var(--muted)}
+.cp-body{gap:10px}
 </style>
 
 <div id="importando" role="status" aria-live="polite" hidden><div class="imp-card"><span class="imp-spin" aria-hidden="true"></span><span>Importando dados do iPhone…</span></div></div>
@@ -1387,7 +1397,7 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
       <div class="sn-leg">${segs.map(x=>`<div><span class="k-${x[2]}">${x[0]}</span><b>${x[2]==='acord'?Math.round(x[1])+' min':hhmm(x[1])}</b></div>`).join('')}</div>
       <div class="sn-bars" aria-label="Horas dormidas nas últimas 7 noites">${barras}</div>${foot}`;
   }
-  const CP=[['imc','IMC','',-1],['gordura','Gordura corporal','%',-1],['nivel','Nível de obesidade','',0],['tmb','TMB',' kcal',0],['musculo','Músculo',' kg',1],['magra','Massa magra',' kg',1],['visceral','Visceral','',-1],['agua','Água','%',1]];
+  const CP=[['imc','IMC','',-1],['gordura','Gordura corporal','%',-1],['nivel','Obesidade','',0],['tmb','TMB',' kcal',0],['musculo','Músculo',' kg',1],['magra','Massa magra',' kg',1],['visceral','Visceral','',-1],['agua','Água','%',1]];
   let cpSel='imc';
   function nivelObes(imc){ if(imc==null) return null; return imc<18.5?'Abaixo do peso':imc<25?'Normal':imc<30?'Sobrepeso':imc<35?'Obesidade grau I':imc<40?'Obesidade grau II':'Obesidade grau III'; }
   function corpoDe(r){
