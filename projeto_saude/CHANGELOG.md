@@ -1,3 +1,6 @@
+## 1.6.0
+- Removido o botão Atualizar do iPhone (a atualização passa a ser só pela automação do iPhone, em segundo plano).
+
 ## 1.5.1
 - Botão Atualizar do iPhone: novo jeito de abrir o Atalhos e aviso quando o app não deixa abrir.
 

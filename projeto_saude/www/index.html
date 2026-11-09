@@ -1646,7 +1646,7 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
 (function(){
   const ua=navigator.userAgent||'';
   const ios=/iPhone|iPad|iPod/i.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
-  const b=document.getElementById('btnSync'); if(!b||!ios) return;
+  const b=document.getElementById('btnSync'); if(!b||!ios||true) return;
   let volta='';
   try{ const top=window.top.location; if(/Home Assistant|HomeAssistant/i.test(ua)) volta='homeassistant://navigate'+top.pathname; else volta=top.href; }catch(e){}
   let url='shortcuts://run-shortcut?name='+encodeURIComponent('Atualizar Projeto Saúde');
