@@ -1,3 +1,7 @@
+## 1.4.0
+- Mesma largura, margens, altura do topo e bordas do painel Início.
+- Entrada suave ao abrir e fundo carregado na hora, sem piscar.
+
 ## 1.3.0
 - Layout igual ao painel Início: títulos fora dos cartões, cartões soltos sobre o fundo e uso do mesmo papel de parede e cor de cartão do tema do Home Assistant.
 

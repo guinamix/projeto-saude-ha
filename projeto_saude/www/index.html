@@ -2,6 +2,11 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap">
+<script>
+try{var _b=localStorage.getItem('ps-bg'),_c=localStorage.getItem('ps-card');
+if(_b){document.documentElement.style.background='#1c1c1c';document.addEventListener('DOMContentLoaded',function(){document.body.style.background=_b;document.body.classList.add('ha-bg');});}
+if(_c){document.documentElement.style.setProperty('--surface',_c);}}catch(e){}
+</script>
 <style>
 /* Layout: bloco verde-limão no topo com o resumo (peso, dose, semana); abaixo, cartões brancos para gráfico, registro e histórico. */
 :root{
@@ -347,6 +352,22 @@ section.panel.solto > .panel-head .note{color:rgba(255,255,255,.72)}
 .cp-tile{border:0!important;border-bottom:2px solid transparent!important;border-radius:0!important}
 .cp-tile.on{border-bottom-color:var(--lime)!important}
 .cp-tile.on .sv-big{color:var(--lime)}
+
+/* ===== v1.4: mesma largura/altura/bordas do Início + transição suave ===== */
+body{padding:24px 34px 48px!important}
+@media (max-width:700px){body{padding:16px 12px 40px!important}}
+.wrap{max-width:none!important;gap:16px!important}
+.hero header{min-height:88px;padding:14px 16px!important;border-radius:28px!important}
+.hero h1{font-size:1.65rem!important;font-weight:700}
+.avatar{width:60px!important;height:60px!important;border-width:2px}
+.hello{font-size:.88rem!important}
+.hero .status{font-size:.78rem}
+.stat,.cartao,section.panel:not(.solto),.aviso{border-radius:28px!important}
+.duo{gap:16px!important}
+section.panel.solto > .panel-head h2{font-size:1.2rem}
+@keyframes psEntrar{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.wrap{animation:psEntrar .35s ease-out both}
+@media (prefers-reduced-motion:reduce){.wrap{animation:none}}
 </style>
 
 <div id="importando" role="status" aria-live="polite" hidden><div class="imp-card"><span class="imp-spin" aria-hidden="true"></span><span>Importando dados do iPhone…</span></div></div>
@@ -1602,9 +1623,9 @@ section.panel.solto > .panel-head .note{color:rgba(255,255,255,.72)}
           else if(b&&b.image) bg=(b.alignment||'center')+' / '+(b.size||'cover')+' '+(b.repeat||'no-repeat')+' url("'+b.image+'") '+(b.attachment||'fixed');
         }catch(e){}
       }
-      if(bg){ document.body.style.background=bg; document.body.classList.add('ha-bg'); document.documentElement.style.background='#1c1c1c'; }
+      if(bg){ try{localStorage.setItem('ps-bg',bg);}catch(e){} document.body.style.background=bg; document.body.classList.add('ha-bg'); document.documentElement.style.background='#1c1c1c'; }
       const card=v('--ha-card-background')||v('--card-background-color');
-      if(card) document.documentElement.style.setProperty('--surface',card);
+      if(card){ document.documentElement.style.setProperty('--surface',card); try{localStorage.setItem('ps-card',card);}catch(e){} }
       const r=v('--ha-card-border-radius'); if(r) document.documentElement.style.setProperty('--r',r);
     }catch(e){}
   }
