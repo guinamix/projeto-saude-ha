@@ -294,6 +294,43 @@ input,select,textarea{background-color:rgba(0,0,0,.22)!important;color:var(--ink
 .pill.ok{background:rgba(181,212,90,.18);color:var(--lime)}
 .quick-row .btn.ghost{color:var(--ink);border-color:rgba(255,255,255,.16)}
 .pill.flat{background:rgba(255,255,255,.12);color:var(--ink)}
+
+/* ===== v1.2: mais parecido com o painel Início ===== */
+html{background:#2a352f}
+body{margin:0;padding:18px max(14px,env(safe-area-inset-left,0px)) 48px;min-height:100vh;
+  background:
+    radial-gradient(120% 60% at 15% 100%, rgba(52,70,58,.95) 0%, rgba(52,70,58,0) 60%),
+    radial-gradient(110% 55% at 85% 95%, rgba(44,60,50,.9) 0%, rgba(44,60,50,0) 60%),
+    radial-gradient(90% 40% at 50% 70%, rgba(80,94,88,.55) 0%, rgba(80,94,88,0) 70%),
+    linear-gradient(180deg,#5b6462 0%,#4d5855 35%,#3d4a44 65%,#2b3830 100%) fixed}
+:root,:root[data-theme],:root:not([data-theme="light"]){--surface:rgba(40,43,41,.86);--bg:rgba(255,255,255,.06);--line:rgba(255,255,255,.09);--r:28px}
+.wrap{gap:18px}
+section.panel,.hero{border-radius:28px;border:0;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.hero{padding:18px;gap:14px}
+.hero h1{font-size:clamp(1.5rem,4.6vw,2rem);font-weight:700;letter-spacing:-.01em}
+h2,details summary{font-weight:700;letter-spacing:-.01em}
+.hello{font-size:.95rem}
+.stats{gap:10px}
+.stat{background:rgba(255,255,255,.07);border:0;border-radius:24px;padding:14px 16px}
+.stat.dose{background:rgba(0,0,0,.22)}
+.eyebrow{text-transform:none;letter-spacing:0;font-size:.95rem;font-weight:600;color:var(--ink)!important;display:inline-flex;align-items:center;gap:10px}
+.ic{flex:none;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.07);display:inline-flex;align-items:center;justify-content:center}
+.ic svg{width:20px;height:20px;fill:#C9CEC6}
+.ic.on{background:rgba(181,212,90,.22)}.ic.on svg{fill:var(--lime)}
+.stat .eyebrow{margin-bottom:6px}
+h2 .ic,summary .ic{width:auto;height:auto;background:none;margin-right:10px}
+h2 .ic svg,summary .ic svg{width:22px;height:22px;fill:var(--ink)}
+h2,summary{display:flex;align-items:center}
+.sv-stats > div,.cp-tile{border-radius:20px;background:rgba(255,255,255,.06)}
+.tabs{border-radius:999px;background:rgba(255,255,255,.06)}
+.tab{border-radius:999px}
+.tab[aria-selected="true"]{background:rgba(255,255,255,.14)}
+.btn{border-radius:999px}
+input,select,textarea{border-radius:14px!important}
+.sync-alert{border-radius:20px}
+details summary{justify-content:flex-start}
+details summary::after{margin-left:auto}
+.marco-lb{text-transform:none;letter-spacing:0;font-size:.85rem;color:var(--ink)}
 </style>
 
 <div id="importando" role="status" aria-live="polite" hidden><div class="imp-card"><span class="imp-spin" aria-hidden="true"></span><span>Importando dados do iPhone…</span></div></div>
@@ -339,7 +376,7 @@ input,select,textarea{background-color:rgba(0,0,0,.22)!important;color:var(--ink
         </div>
       </div>
       <div class="stat">
-        <span class="eyebrow" id="semanaTitulo">Esta semana</span>
+        <span class="eyebrow"><span id="semanaTitulo">Esta semana</span></span>
         <div class="bars" id="metas"></div>
         <button type="button" class="quick" id="camBtn">+ Caminhada de hoje</button>
       </div>
@@ -1495,5 +1532,30 @@ input,select,textarea{background-color:rgba(0,0,0,.22)!important;color:var(--ink
     }catch(e){ const m=$('#cmMsg'); m.textContent='Não foi possível salvar os dados do iPhone. Abra de novo pelo Atalho.'; m.classList.add('err'); }
   }
   window.addEventListener('hashchange',importarHashFila);
+})();
+</script>
+<script>
+(function(){
+  const P={
+    peso:"M5,2H19A2,2 0 0,1 21,4V20A2,2 0 0,1 19,22H5A2,2 0 0,1 3,20V4A2,2 0 0,1 5,2M12,4A4,4 0 0,0 8,8H11.26L10.85,5.23L12.9,8H16A4,4 0 0,0 12,4M5,10V20H19V10H5Z",
+    agulha:"M11.15,15.18L9.73,13.77L11.15,12.35L12.56,13.77L13.97,12.35L12.56,10.94L13.97,9.53L15.39,10.94L16.8,9.53L13.97,6.7L6.9,13.77L9.73,16.6L11.15,15.18M3.08,19L6.2,15.89L4.08,13.77L13.97,3.87L16.1,6L17.5,4.58L16.1,3.16L17.5,1.75L21.75,6L20.34,7.4L18.92,6L17.5,7.4L19.63,9.53L9.73,19.42L7.61,17.3L3.08,21.84V19Z",
+    andar:"M14.12,10H19V8.2H15.38L13.38,4.87C13.08,4.37 12.54,4.03 11.92,4.03C11.74,4.03 11.58,4.06 11.42,4.11L6,5.8V11H7.8V7.33L9.91,6.67L6,22H7.8L10.67,13.89L13,17V22H14.8V15.59L12.31,11.05L13.04,8.18M14,3.8C15,3.8 15.8,3 15.8,2C15.8,1 15,0.2 14,0.2C13,0.2 12.2,1 12.2,2C12.2,3 13,3.8 14,3.8Z",
+    grafico:"M16,11.78L20.24,4.45L21.97,5.45L16.74,14.5L10.23,10.75L5.46,19H22V21H2V3H4V17.54L9.5,8L16,11.78Z",
+    cama:"M19,7H11V14H3V5H1V20H3V17H21V20H23V11A4,4 0 0,0 19,7M7,13A3,3 0 0,0 10,10A3,3 0 0,0 7,7A3,3 0 0,0 4,10A3,3 0 0,0 7,13Z",
+    corpo:"M21,9H15V22H13V16H11V22H9V9H3V7H21M12,2A2,2 0 0,1 14,4A2,2 0 0,1 12,6C10.89,6 10,5.1 10,4C10,2.89 10.89,2 12,2Z",
+    bandeira:"M14.4,6L14,4H5V21H7V14H12.6L13,16H20V6H14.4Z",
+    lapis:"M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z",
+    plano:"M19,3H14.82C14.4,1.84 13.3,1 12,1C10.7,1 9.6,1.84 9.18,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M12,3A1,1 0 0,1 13,4A1,1 0 0,1 12,5A1,1 0 0,1 11,4A1,1 0 0,1 12,3",
+    historico:"M13.5,8H12V13L16.28,15.54L17,14.33L13.5,12.25V8M13,3A9,9 0 0,0 4,12H1L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3",
+    celular:"M17,19H7V5H17M17,1H7C5.89,1 5,1.89 5,3V21A2,2 0 0,0 7,23H17A2,2 0 0,0 19,21V3C19,1.89 18.1,1 17,1Z",
+    doc:"M13,9H18.5L13,3.5V9M6,2H14L20,8V20A2,2 0 0,1 18,22H6C4.89,22 4,21.1 4,20V4C4,2.89 4.89,2 6,2M15,18V16H6V18H15M18,14V12H6V14H18Z"
+  };
+  const ic=(k,on)=>'<span class="ic'+(on?' on':'')+'" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="'+P[k]+'"/></svg></span>';
+  const mapa=[[/evolu/i,'grafico'],[/atividade/i,'andar'],[/^sono/i,'cama'],[/composi/i,'corpo'],[/metas/i,'bandeira'],[/registrar/i,'lapis'],[/plano/i,'plano'],[/hist/i,'historico'],[/conex/i,'celular'],[/relat/i,'doc']];
+  function aplicar(){
+    document.querySelectorAll('h2, details > summary').forEach(el=>{ if(el.querySelector('.ic')) return; const t=el.textContent.trim(); const m=mapa.find(([r])=>r.test(t)); if(m) el.insertAdjacentHTML('afterbegin',ic(m[1])); });
+    document.querySelectorAll('.stat > .eyebrow').forEach(el=>{ if(el.querySelector('.ic')) return; const t=el.textContent.trim().toLowerCase(); const k=t.includes('peso')?'peso':t.includes('mounjaro')?'agulha':'andar'; el.insertAdjacentHTML('afterbegin',ic(k,k==='peso')); });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',aplicar); else aplicar();
 })();
 </script>
