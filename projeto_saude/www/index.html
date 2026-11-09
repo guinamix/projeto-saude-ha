@@ -1652,7 +1652,18 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
   let url='shortcuts://run-shortcut?name='+encodeURIComponent('Atualizar Projeto Saúde');
   if(volta) url='shortcuts://x-callback-url/run-shortcut?name='+encodeURIComponent('Atualizar Projeto Saúde')+'&x-success='+encodeURIComponent(volta)+'&x-error='+encodeURIComponent(volta);
   b.href=url; b.hidden=false;
-  b.addEventListener('click',()=>{ b.classList.add('girando'); b.querySelector('span').textContent='Atualizando…'; setTimeout(()=>{ b.classList.remove('girando'); b.querySelector('span').textContent='Atualizar do iPhone'; },20000); });
+  b.addEventListener('click',e=>{
+    e.preventDefault();
+    const sp=b.querySelector('span'); b.classList.add('girando'); sp.textContent='Abrindo Atalhos…';
+    let saiu=false; const marca=()=>{ if(document.hidden) saiu=true; }; document.addEventListener('visibilitychange',marca);
+    try{ window.top.location.href=url; }catch(err){ try{ window.open(url,'_blank'); }catch(e2){ location.href=url; } }
+    setTimeout(()=>{ if(!saiu){ try{ window.open(url,'_blank'); }catch(e3){} } },900);
+    setTimeout(()=>{
+      document.removeEventListener('visibilitychange',marca); b.classList.remove('girando');
+      if(saiu){ sp.textContent='Atualizar do iPhone'; }
+      else { sp.textContent='Não abriu'; const st=document.getElementById('status'); if(st) st.textContent='O app do Home Assistant não deixou abrir o Atalhos. Use o ícone Projeto Saúde da tela de início.'; setTimeout(()=>{ sp.textContent='Atualizar do iPhone'; },6000); }
+    },3500);
+  });
   document.addEventListener('visibilitychange',()=>{ if(!document.hidden && window.__haRefresh) setTimeout(window.__haRefresh,1500); });
 })();
 </script>

@@ -1,3 +1,6 @@
+## 1.5.1
+- Botão Atualizar do iPhone: novo jeito de abrir o Atalhos e aviso quando o app não deixa abrir.
+
 ## 1.5.0
 - Botão "Atualizar do iPhone" no topo (só aparece no iPhone/iPad): roda o atalho e volta para o Projeto Saúde já atualizado.
 
