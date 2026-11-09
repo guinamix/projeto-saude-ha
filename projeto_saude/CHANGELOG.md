@@ -1,3 +1,6 @@
+## 1.6.2
+- Proteção: se o iPhone mandar zero (por exemplo, rodando com a tela bloqueada), não apaga os passos já registrados.
+
 ## 1.6.1
 - Log mais limpo: mostra só os envios do iPhone, com data e hora.
 

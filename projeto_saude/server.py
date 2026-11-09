@@ -264,6 +264,12 @@ def ingest(usr, texto):
                     continue
                 if seq is not None:
                     r["seq"] = seq.get(r["data"], 0)
+                ant = get_doc(usr, "registros/dia-" + r["data"]) or {}
+                for k in ("passos", "km", "min", "seq"):
+                    if k in r and (r[k] or 0) == 0 and (ant.get(k) or 0) > 0:
+                        del r[k]
+                if not any(k in r for k in ("passos", "km", "min", "sono", "seq")):
+                    continue
                 merge(usr, "registros/dia-" + r["data"], dict(r, tipo="atividade", criadoEm=agora))
                 gravados += 1
             if dias:
