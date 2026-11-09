@@ -377,6 +377,13 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
 .btn-sync.girando svg{animation:psGira 1s linear infinite}
 @keyframes psGira{to{transform:rotate(360deg)}}
 @media (max-width:700px){.topo-dir{width:100%;justify-content:space-between}}
+
+.hello #diaProjeto{color:var(--muted)!important;font-weight:500}
+.topo-info{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.meta-pct{margin:0;font-size:.95rem;color:var(--ink)}
+.meta-pct b{color:var(--lime);font-size:1.15rem;font-weight:700}
+.meta-pct:empty{display:none}
+@media (max-width:700px){.topo-info{align-items:flex-start}}
 </style>
 
 <div id="importando" role="status" aria-live="polite" hidden><div class="imp-card"><span class="imp-spin" aria-hidden="true"></span><span>Importando dados do iPhone…</span></div></div>
@@ -395,7 +402,7 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
           <p class="hello"><span id="nomeUser"></span><span id="diaProjeto"></span></p>
         </div>
       </div>
-      <div class="topo-dir"><p class="status" id="status">Carregando seus registros…</p><a class="btn-sync" id="btnSync" href="#" target="_top" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12,18A6,6 0 0,1 6,12C6,11 6.25,10.03 6.7,9.2L5.24,7.74C4.46,8.97 4,10.43 4,12A8,8 0 0,0 12,20V23L16,19L12,15M12,4V1L8,5L12,9V6A6,6 0 0,1 18,12C18,13 17.75,13.97 17.3,14.8L18.76,16.26C19.54,15.03 20,13.57 20,12A8,8 0 0,0 12,4Z"/></svg><span>Atualizar do iPhone</span></a></div>
+      <div class="topo-dir"><div class="topo-info"><p class="meta-pct" id="metaPct"></p><p class="status" id="status">Carregando seus registros…</p></div><a class="btn-sync" id="btnSync" href="#" target="_top" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12,18A6,6 0 0,1 6,12C6,11 6.25,10.03 6.7,9.2L5.24,7.74C4.46,8.97 4,10.43 4,12A8,8 0 0,0 12,20V23L16,19L12,15M12,4V1L8,5L12,9V6A6,6 0 0,1 18,12C18,13 17.75,13.97 17.3,14.8L18.76,16.26C19.54,15.03 20,13.57 20,12A8,8 0 0,0 12,4Z"/></svg><span>Atualizar do iPhone</span></a></div>
     </header>
     <div class="stats">
       <div class="stat">
@@ -665,7 +672,6 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
   // usuário e conexão
   api('api/me').then(me=>{
     window.__nomeUser=me.name||'';
-    const el=document.getElementById('nomeUser'); if(el) el.textContent=me.name||'';
     const ini=document.getElementById('avatarIni'); if(ini&&me.name) ini.textContent=me.name.trim().charAt(0).toUpperCase();
     const host=location.hostname; const link='http://'+host+':8765/i/'+me.token;
     const L=document.getElementById('cxLink'); if(L) L.textContent=link;
@@ -835,8 +841,10 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
     if(meta&&ini&&ini>meta){
       const pct=Math.max(0,Math.min(100,perdido/(ini-meta)*100));
       const falta=Math.max(0,(atual||ini)-meta);
+      $('#metaPct').innerHTML='<b>'+Math.round(pct)+'%</b> da meta';
       $('#metaNote').textContent= falta>0 ? ('Agora '+kg(atual||ini)+' kg · faltam '+kg(falta)+' kg até '+kg(meta)+' kg') : 'Meta alcançada!';
     } else {
+      $('#metaPct').textContent='';
       $('#metaNote').textContent= !atual ? 'Registre o primeiro peso para começar' : ('Agora '+kg(atual)+' kg · defina a meta de peso no Plano do tratamento');
     }
     // marcos, em três barras de progresso: peso, aplicações, tratamento
@@ -844,9 +852,9 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
     const aps=registros.filter(r=>r.tipo==='aplicacao');
     const d0 = plano.inicio ? Math.max(0,dias(plano.inicio,hoje())) : 0;
     const totalKg = meta&&ini&&ini>meta ? ini-meta : 20;
-    const tPeso=[]; for(let k=5;k<totalKg;k+=5) tPeso.push({v:k,l:'−'+k}); tPeso.push({v:totalKg,l:'−'+(Math.round(totalKg*10)/10).toLocaleString('pt-BR')});
+    const escalaKg=Math.max(5,Math.ceil(totalKg/5)*5); const tPeso=[]; for(let k=5;k<=escalaKg;k+=5) tPeso.push({v:k,l:'−'+k});
     const barras=[
-      {t:'⚖️ Peso', v:Math.min(perdido,totalKg), max:totalKg, txt: perdido>0?('−'+kg(perdido)+' kg'):'0 kg', ticks:tPeso},
+      {t:'⚖️ Peso', v:Math.min(perdido,escalaKg), max:escalaKg, txt: perdido>0?('−'+kg(perdido)+' kg'):'0 kg', ticks:tPeso},
       {t:'💉 Aplicações', v:Math.min(aps.length*7,147), max:147, txt: aps.length+' de 21', ticks:Array.from({length:21},(_,i)=>({v:(i+1)*7,l:String(i+1)})), mini:true},
       {t:'📅 Tratamento', v:(plano.inicio&&hoje()>=plano.inicio)?Math.min(d0+7,147):0, max:147, txt: plano.inicio?(d0>=147?'Completo':(Math.floor(d0/7))+' sem.'):'—', ticks:[{v:28,l:'1 mês'},{v:56,l:'2 meses'},{v:84,l:'3 meses'},{v:112,l:'4 meses'},{v:147,l:'5 meses'}]}
     ];
@@ -948,7 +956,7 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
     const el=$('#diaProjeto'); const pi=plano.projetoInicio; const t=hoje();
     if(!pi){ el.textContent=''; return; }
     const dd=dias(t,pi);
-    el.textContent = dd>1 ? ' · faltam '+dd+' dias para começar' : dd===1 ? ' · começa amanhã' : dd===0 ? ' · começa hoje!' : ' · dia '+(1-dd)+' do projeto';
+    el.textContent = dd>1 ? 'Faltam '+dd+' dias para começar' : dd===1 ? 'Começa amanhã' : dd===0 ? 'Começa hoje!' : 'Dia '+(1-dd)+' do projeto';
   }
   // ---- Pesagem ----
   function renderAvisoPeso(){

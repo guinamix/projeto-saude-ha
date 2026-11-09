@@ -1,3 +1,7 @@
+## 1.7.0
+- Topo: sem o nome, só o dia do projeto; % da meta no canto direito.
+- Metas: régua do peso em passos de 5 kg, sem números sobrepostos.
+
 ## 1.6.2
 - Proteção: se o iPhone mandar zero (por exemplo, rodando com a tela bloqueada), não apaga os passos já registrados.
 
