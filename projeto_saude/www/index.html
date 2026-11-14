@@ -546,9 +546,18 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
     </section>
   </div>
 
+  <section class="panel" id="metasPanel">
+    <div class="panel-head">
+      <h2>Metas</h2>
+      <span class="note" id="metaNote">Defina a meta de peso no Plano do tratamento</span>
+    </div>
+    <div class="marcos-grupos" id="marcos"></div>
+  </section>
+
   <section class="panel" id="examesPanel">
-    <div class="panel-head"><h2>Exames</h2><span class="note" id="exNote">anexe seus exames e compare</span></div>
-    <div class="ex-body">
+    <details id="examesBox">
+      <summary>Exames <span class="note" id="exNote" style="margin-left:10px;font-weight:400">anexe seus exames e compare</span></summary>
+      <div class="box-body ex-body">
       <div class="ex-acoes"><button type="button" class="btn lime" id="exNovoBtn">+ Novo exame</button></div>
       <form class="ex-form" id="exForm" hidden>
         <div class="ex-grid">
@@ -562,16 +571,10 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
       <div id="exComp"></div>
       <div id="exAnalise"></div>
       <ul class="ex-lista" id="exLista"></ul>
-    </div>
+      </div>
+    </details>
   </section>
 
-  <section class="panel" id="metasPanel">
-    <div class="panel-head">
-      <h2>Metas</h2>
-      <span class="note" id="metaNote">Defina a meta de peso no Plano do tratamento</span>
-    </div>
-    <div class="marcos-grupos" id="marcos"></div>
-  </section>
 
   <section class="panel">
     <details id="registrarBox">
