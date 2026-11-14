@@ -1,3 +1,6 @@
+## 2.0.0
+- Nova área Exames: anexar PDF ou foto, colar resultados e análise do Claude, tabela comparativa entre exames com destaque do que está fora da referência.
+
 ## 1.9.1
 - Cápsulas da composição corporal todas do mesmo tamanho; aviso do gráfico menor.
 

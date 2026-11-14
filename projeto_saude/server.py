@@ -280,6 +280,24 @@ def ingest(usr, texto):
     return resumo
 
 
+# ------------------------------------------------------------ exames
+TIPOS = {"pdf": "application/pdf", "jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png",
+         "heic": "image/heic", "webp": "image/webp"}
+
+
+def pasta_exames(usr):
+    d = os.path.join(DATA_DIR, "exames", re.sub(r"[^A-Za-z0-9_-]", "_", usr))
+    os.makedirs(d, exist_ok=True)
+    return d
+
+
+def arquivo_exame(usr, fid):
+    if not re.fullmatch(r"[A-Za-z0-9]{6,40}\.(pdf|jpg|jpeg|png|heic|webp)", fid or ""):
+        return None
+    caminho = os.path.join(pasta_exames(usr), fid)
+    return caminho if os.path.isfile(caminho) else None
+
+
 # --------------------------------------------------------- servidores
 class Base(BaseHTTPRequestHandler):
     server_version = "ProjetoSaude/1.0"
@@ -341,6 +359,22 @@ class Ingress(Base):
             return self.send(200, {"rev": rev_of(u["id"])})
         if p == "/api/state":
             return self.send(200, {"rev": rev_of(u["id"]), "docs": all_docs(u["id"])})
+        m = re.fullmatch(r"/api/exame/arquivo/([A-Za-z0-9.]+)", p)
+        if m:
+            arq = arquivo_exame(u["id"], m.group(1))
+            if not arq:
+                return self.send(404, {"erro": "arquivo não encontrado"})
+            ext = arq.rsplit(".", 1)[1].lower()
+            with open(arq, "rb") as f:
+                dados = f.read()
+            self.send_response(200)
+            self.send_header("Content-Type", TIPOS.get(ext, "application/octet-stream"))
+            self.send_header("Content-Length", str(len(dados)))
+            self.send_header("Content-Disposition", "inline")
+            self.send_header("Cache-Control", "private, max-age=3600")
+            self.end_headers()
+            self.wfile.write(dados)
+            return
         return self.send(404, {"erro": "não encontrado"})
 
     def do_POST(self):
@@ -348,6 +382,20 @@ class Ingress(Base):
         u = self.usuario()
         if not u:
             return self.send(403, {"erro": "acesso só pelo Home Assistant"})
+        if p == "/api/exame/upload":
+            ext = (parse_qs(urlparse(self.path).query).get("ext", [""])[0] or "").lower()
+            if ext not in TIPOS:
+                return self.send(400, {"erro": "Envie PDF ou imagem (JPG, PNG, HEIC)."})
+            try:
+                conteudo = self.body(25 * 1024 * 1024)
+            except ValueError:
+                return self.send(400, {"erro": "Arquivo grande demais (máximo 25 MB)."})
+            if not conteudo:
+                return self.send(400, {"erro": "Arquivo vazio."})
+            fid = secrets.token_hex(10) + "." + ext
+            with open(os.path.join(pasta_exames(u["id"]), fid), "wb") as f:
+                f.write(conteudo)
+            return self.send(200, {"ok": True, "id": fid, "bytes": len(conteudo)})
         try:
             dados = json.loads(self.body() or b"{}")
         except (ValueError, json.JSONDecodeError):
@@ -360,11 +408,16 @@ class Ingress(Base):
                 docs = dados.get("docs") or {}
                 with LOCK:
                     for path, d in docs.items():
-                        if re.fullmatch(r"(registros|config)/[A-Za-z0-9_\-.~:@+]{1,200}", path) and isinstance(d, dict):
+                        if re.fullmatch(r"(registros|config|exames)/[A-Za-z0-9_\-.~:@+]{1,200}", path) and isinstance(d, dict):
                             put_doc(u["id"], path, d)
                     bump(u["id"])
                     CONN.commit()
                 return self.send(200, {"ok": True, "importados": len(docs), "rev": rev_of(u["id"])})
+            if p == "/api/exame/apagar":
+                arq = arquivo_exame(u["id"], dados.get("id"))
+                if arq:
+                    os.remove(arq)
+                return self.send(200, {"ok": True})
             if p == "/api/token":
                 novo = secrets.token_urlsafe(12).replace("-", "a").replace("_", "b")
                 with LOCK:

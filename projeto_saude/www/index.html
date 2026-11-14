@@ -404,6 +404,37 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
 .cp-tile .pill{margin-top:auto}
 .cp-chart .empty{font-size:.78rem;padding:4px 2px 0;margin:0;color:var(--muted)}
 .cp-body{gap:10px}
+
+/* ===== Exames ===== */
+.ex-body{display:flex;flex-direction:column;gap:14px}
+.ex-acoes{display:flex;gap:10px;flex-wrap:wrap}
+.ex-form{display:flex;flex-direction:column;gap:12px;background:rgba(255,255,255,.05);border-radius:20px;padding:14px}
+.ex-form[hidden]{display:none}
+.ex-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ex-grid label{display:flex;flex-direction:column;gap:6px;font-size:.85rem;color:var(--muted)}
+.ex-grid .full{grid-column:1/-1}
+.ex-form-acoes{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ex-tab-wrap{overflow-x:auto;border-radius:16px;background:rgba(255,255,255,.04)}
+.ex-tab{width:100%;border-collapse:collapse;font-size:.86rem;font-variant-numeric:tabular-nums}
+.ex-tab th,.ex-tab td{padding:9px 12px;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);white-space:nowrap}
+.ex-tab thead th{font-size:.75rem;color:var(--muted);font-weight:600;position:sticky;top:0;background:rgba(40,43,41,.95)}
+.ex-tab td.nome{font-weight:600;white-space:normal;min-width:130px}
+.ex-tab td.ref{color:var(--muted);font-size:.78rem}
+.ex-tab .alto{color:#EF8A74;font-weight:700}
+.ex-tab .baixo{color:#E3B567;font-weight:700}
+.ex-tab .seta{font-size:.72rem;margin-left:4px;color:var(--muted)}
+.ex-tab tr.grupo td{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--teal);padding-top:14px;border-bottom:0}
+.ex-analise{background:rgba(181,212,90,.08);border-radius:16px;padding:12px 14px;font-size:.9rem;line-height:1.5;white-space:pre-wrap}
+.ex-analise b.tit{display:block;color:var(--lime);margin-bottom:4px;font-size:.82rem}
+.ex-lista{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.ex-lista li{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:rgba(255,255,255,.05);border-radius:16px;padding:10px 12px}
+.ex-lista .ex-info{flex:1;min-width:160px;display:flex;flex-direction:column}
+.ex-lista .ex-info b{font-size:.92rem}
+.ex-lista .ex-info span{font-size:.78rem;color:var(--muted)}
+.ex-lista a,.ex-lista button{font-size:.8rem}
+.ex-lista textarea{flex-basis:100%}
+.ex-leg{font-size:.75rem;color:var(--muted);margin:0}
+@media (max-width:560px){.ex-grid{grid-template-columns:1fr}}
 </style>
 
 <div id="importando" role="status" aria-live="polite" hidden><div class="imp-card"><span class="imp-spin" aria-hidden="true"></span><span>Importando dados do iPhone…</span></div></div>
@@ -514,6 +545,25 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
       <div class="cp-body" id="cpBody"></div>
     </section>
   </div>
+
+  <section class="panel" id="examesPanel">
+    <div class="panel-head"><h2>Exames</h2><span class="note" id="exNote">anexe seus exames e compare</span></div>
+    <div class="ex-body">
+      <div class="ex-acoes"><button type="button" class="btn lime" id="exNovoBtn">+ Novo exame</button></div>
+      <form class="ex-form" id="exForm" hidden>
+        <div class="ex-grid">
+          <label>Data do exame<input type="date" id="exData" required></label>
+          <label>Laboratório<input type="text" id="exLab" maxlength="80" placeholder="Ex.: Fleury"></label>
+          <label class="full">Arquivo (PDF ou foto)<input type="file" id="exArq" accept="application/pdf,image/*"></label>
+          <label class="full">Resultados e análise do Claude <span class="note">(opcional, pode colar depois)</span><textarea id="exCola" rows="4" placeholder="Cole aqui o texto que o Claude te mandou no chat"></textarea></label>
+        </div>
+        <div class="ex-form-acoes"><button type="submit" class="btn lime" id="exSalvar">Salvar exame</button><button type="button" class="btn ghost" id="exCancelar">Cancelar</button><span class="note" id="exMsg"></span></div>
+      </form>
+      <div id="exComp"></div>
+      <div id="exAnalise"></div>
+      <ul class="ex-lista" id="exLista"></ul>
+    </div>
+  </section>
 
   <section class="panel" id="metasPanel">
     <div class="panel-head">
@@ -1640,10 +1690,11 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
     plano:"M19,3H14.82C14.4,1.84 13.3,1 12,1C10.7,1 9.6,1.84 9.18,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M12,3A1,1 0 0,1 13,4A1,1 0 0,1 12,5A1,1 0 0,1 11,4A1,1 0 0,1 12,3",
     historico:"M13.5,8H12V13L16.28,15.54L17,14.33L13.5,12.25V8M13,3A9,9 0 0,0 4,12H1L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3",
     celular:"M17,19H7V5H17M17,1H7C5.89,1 5,1.89 5,3V21A2,2 0 0,0 7,23H17A2,2 0 0,0 19,21V3C19,1.89 18.1,1 17,1Z",
+    frasco:"M5,19A1,1 0 0,0 6,20H18A1,1 0 0,0 19,19C19,18.79 18.93,18.59 18.82,18.43L13,8.35V4H11V8.35L5.18,18.43C5.07,18.59 5,18.79 5,19M6,22A3,3 0 0,1 3,19C3,18.4 3.18,17.84 3.5,17.37L9,7.81V6A1,1 0 0,1 8,5V4A2,2 0 0,1 10,2H14A2,2 0 0,1 16,4V5A1,1 0 0,1 15,6V7.81L20.5,17.37C20.82,17.84 21,18.4 21,19A3,3 0 0,1 18,22H6Z",
     doc:"M13,9H18.5L13,3.5V9M6,2H14L20,8V20A2,2 0 0,1 18,22H6C4.89,22 4,21.1 4,20V4C4,2.89 4.89,2 6,2M15,18V16H6V18H15M18,14V12H6V14H18Z"
   };
   const ic=(k,on)=>'<span class="ic'+(on?' on':'')+'" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="'+P[k]+'"/></svg></span>';
-  const mapa=[[/evolu/i,'grafico'],[/atividade/i,'andar'],[/^sono/i,'cama'],[/composi/i,'corpo'],[/metas/i,'bandeira'],[/registrar/i,'lapis'],[/plano/i,'plano'],[/hist/i,'historico'],[/conex/i,'celular'],[/relat/i,'doc']];
+  const mapa=[[/evolu/i,'grafico'],[/atividade/i,'andar'],[/^sono/i,'cama'],[/composi/i,'corpo'],[/metas/i,'bandeira'],[/registrar/i,'lapis'],[/plano/i,'plano'],[/hist/i,'historico'],[/conex/i,'celular'],[/exame/i,'frasco'],[/relat/i,'doc']];
   function aplicar(){
     document.querySelectorAll('h2, details > summary').forEach(el=>{ if(el.querySelector('.ic')) return; const t=el.textContent.trim(); const m=mapa.find(([r])=>r.test(t)); if(m) el.insertAdjacentHTML('afterbegin',ic(m[1])); });
     document.querySelectorAll('.stat > .eyebrow').forEach(el=>{ if(el.querySelector('.ic')) return; const t=el.textContent.trim().toLowerCase(); const k=t.includes('peso')?'peso':t.includes('mounjaro')?'agulha':'andar'; el.insertAdjacentHTML('afterbegin',ic(k,k==='peso')); });
@@ -1711,5 +1762,107 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
     },3500);
   });
   document.addEventListener('visibilitychange',()=>{ if(!document.hidden && window.__haRefresh) setTimeout(window.__haRefresh,1500); });
+})();
+</script>
+<script>
+/* ===== Exames ===== */
+(function(){
+  const $=q=>document.querySelector(q);
+  const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const norm=t=>String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+  const fmtD=d=>{ if(!d) return ''; const [y,m,dd]=d.split('-'); return dd+'/'+m+'/'+y.slice(2); };
+  const num=v=>{ if(v==null||v==='') return null; const n=Number(String(v).replace(',','.')); return isFinite(n)?n:null; };
+  const fmtN=v=>{ if(v==null) return '—'; const n=Number(v); if(!isFinite(n)) return esc(v); return (Math.round(n*100)/100).toLocaleString('pt-BR'); };
+  let db=null, exames=[];
+  function lerCola(txt){
+    if(!txt||!txt.trim()) return null;
+    const a=txt.indexOf('{'), b=txt.lastIndexOf('}');
+    if(a<0||b<a) throw new Error('Não encontrei os dados no texto. Copie a mensagem inteira que o Claude mandou.');
+    const j=JSON.parse(txt.slice(a,b+1));
+    const res=(j.resultados||[]).map(r=>({nome:String(r.nome||'').trim(),grupo:r.grupo||'',valor:r.valor,unidade:r.unidade||'',min:num(r.min),max:num(r.max),ref:r.ref||''})).filter(r=>r.nome);
+    return {data:j.data||'',lab:j.lab||'',resultados:res,analise:j.analise||''};
+  }
+  function status(r){ const v=num(r.valor); if(v==null) return ''; if(r.max!=null&&v>r.max) return 'alto'; if(r.min!=null&&v<r.min) return 'baixo'; return ''; }
+  function render(){
+    const lista=$('#exLista'), comp=$('#exComp'), an=$('#exAnalise'); if(!lista) return;
+    const ord=exames.slice().sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+    $('#exNote').textContent = ord.length ? ord.length+(ord.length===1?' exame':' exames')+' · último '+fmtD(ord[0].data) : 'anexe seus exames e compare';
+    lista.innerHTML = ord.map(e=>{
+      const n=(e.resultados||[]).length;
+      return `<li data-id="${esc(e.id)}"><div class="ex-info"><b>${fmtD(e.data)}${e.lab?' · '+esc(e.lab):''}</b><span>${n?n+' resultados':'sem resultados ainda'}${e.arquivo?' · '+esc(e.arquivo.nome||'arquivo'):''}</span></div>
+        ${e.arquivo?`<a class="btn ghost" href="api/exame/arquivo/${encodeURIComponent(e.arquivo.id)}" target="_blank" rel="noopener">Abrir</a>`:''}
+        <button type="button" class="btn ghost" data-acao="colar">${n?'Atualizar resultados':'Colar resultados'}</button>
+        <button type="button" class="btn ghost" data-acao="apagar">Apagar</button></li>`; }).join('') || '<li class="empty" style="background:none;padding:0"><span class="note">Nenhum exame ainda. Toque em <b>+ Novo exame</b> para anexar o primeiro.</span></li>';
+    // comparativo
+    const com=ord.filter(e=>(e.resultados||[]).length).slice(0,4).reverse();
+    if(!com.length){ comp.innerHTML=ord.length?'<p class="ex-leg">Para ver o comparativo, mande o exame para o Claude no chat e cole aqui o texto que ele devolver.</p>':''; an.innerHTML=''; return; }
+    const linhas=new Map();
+    com.forEach((e,ci)=>(e.resultados||[]).forEach(r=>{ const k=norm(r.nome); if(!linhas.has(k)) linhas.set(k,{nome:r.nome,grupo:r.grupo||'',un:r.unidade,ref:r.ref,min:r.min,max:r.max,vals:[]}); const L=linhas.get(k); L.vals[ci]=r; if(r.ref) L.ref=r.ref; if(r.min!=null) L.min=r.min; if(r.max!=null) L.max=r.max; if(r.grupo) L.grupo=r.grupo; }));
+    const porGrupo={}; [...linhas.values()].forEach(L=>{ (porGrupo[L.grupo||'Outros']=porGrupo[L.grupo||'Outros']||[]).push(L); });
+    let corpo='';
+    Object.keys(porGrupo).forEach(g=>{
+      if(Object.keys(porGrupo).length>1) corpo+=`<tr class="grupo"><td colspan="${com.length+2}">${esc(g)}</td></tr>`;
+      porGrupo[g].forEach(L=>{
+        corpo+=`<tr><td class="nome">${esc(L.nome)}${L.un?` <span class="note">${esc(L.un)}</span>`:''}</td>`;
+        com.forEach((e,ci)=>{ const r=L.vals[ci]; if(!r){ corpo+='<td class="note">—</td>'; return; }
+          const st=status(Object.assign({},r,{min:r.min!=null?r.min:L.min,max:r.max!=null?r.max:L.max}));
+          let seta=''; const ant=ci>0?L.vals.slice(0,ci).reverse().find(Boolean):null;
+          if(ant){ const a=num(ant.valor), v=num(r.valor); if(a!=null&&v!=null&&a!==v){ const pc=a?Math.round((v-a)/Math.abs(a)*100):0; seta=`<span class="seta">${v>a?'▲':'▼'}${pc?Math.abs(pc)+'%':''}</span>`; } }
+          corpo+=`<td class="${st}">${fmtN(r.valor)}${seta}</td>`; });
+        corpo+=`<td class="ref">${esc(L.ref||(L.min!=null||L.max!=null?((L.min!=null?L.min:'')+' – '+(L.max!=null?L.max:'')):''))}</td></tr>`;
+      });
+    });
+    comp.innerHTML=`<div class="ex-tab-wrap"><table class="ex-tab"><thead><tr><th>Exame</th>${com.map(e=>`<th>${fmtD(e.data)}</th>`).join('')}<th>Referência</th></tr></thead><tbody>${corpo}</tbody></table></div><p class="ex-leg"><span style="color:#EF8A74">■</span> acima da referência · <span style="color:#E3B567">■</span> abaixo · ▲▼ mudança em relação ao exame anterior</p>`;
+    const ultA=ord.find(e=>e.analise);
+    an.innerHTML = ultA ? `<div class="ex-analise"><b class="tit">Análise do Claude · exame de ${fmtD(ultA.data)}</b>${esc(ultA.analise)}</div><p class="ex-leg">Análise informativa. Quem interpreta os exames e decide o tratamento é o seu médico.</p>` : '';
+  }
+  async function salvarNovo(ev){
+    ev.preventDefault(); const msg=$('#exMsg'); msg.textContent='';
+    let cola=null; try{ cola=lerCola($('#exCola').value); }catch(e){ msg.textContent=e.message; return; }
+    const data=$('#exData').value||(cola&&cola.data)||''; if(!data){ msg.textContent='Coloque a data do exame.'; return; }
+    const f=$('#exArq').files[0]; let arquivo=null;
+    $('#exSalvar').disabled=true;
+    try{
+      if(f){ msg.textContent='Enviando arquivo…'; const ext=(f.name.split('.').pop()||'').toLowerCase()||(f.type.includes('pdf')?'pdf':'jpg');
+        const r=await fetch('api/exame/upload?ext='+encodeURIComponent(ext),{method:'POST',credentials:'same-origin',body:f}); const j=await r.json(); if(!r.ok) throw new Error(j.erro||'Falha ao enviar o arquivo.');
+        arquivo={id:j.id,nome:f.name,bytes:j.bytes}; }
+      const id='ex-'+data.replace(/-/g,'')+'-'+Math.random().toString(36).slice(2,6);
+      const doc={data,lab:$('#exLab').value.trim()||(cola&&cola.lab)||'',criadoEm:Date.now()};
+      if(arquivo) doc.arquivo=arquivo; if(cola){ doc.resultados=cola.resultados; if(cola.analise) doc.analise=cola.analise; }
+      await db.collection('exames').doc(id).set(doc);
+      $('#exForm').reset(); $('#exForm').hidden=true; msg.textContent='';
+    }catch(e){ msg.textContent=e.message||'Não consegui salvar.'; }
+    $('#exSalvar').disabled=false;
+  }
+  async function acao(ev){
+    const bt=ev.target.closest('button[data-acao]'); if(!bt) return; const li=bt.closest('li'); const id=li.dataset.id; const e=exames.find(x=>x.id===id); if(!e) return;
+    if(bt.dataset.acao==='apagar'){
+      if(bt.dataset.conf!=='1'){ bt.dataset.conf='1'; bt.textContent='Confirmar apagar'; setTimeout(()=>{ bt.dataset.conf=''; bt.textContent='Apagar'; },4000); return; }
+      try{ if(e.arquivo) await window.__haApi('api/exame/apagar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:e.arquivo.id})}); }catch(x){}
+      await db.collection('exames').doc(id).delete(); return;
+    }
+    if(bt.dataset.acao==='colar'){
+      if(li.querySelector('textarea')) return;
+      li.insertAdjacentHTML('beforeend','<textarea rows="4" placeholder="Cole aqui o texto que o Claude te mandou no chat"></textarea><button type="button" class="btn lime" data-acao="gravarCola">Salvar resultados</button><span class="note"></span>');
+      li.querySelector('textarea').focus(); return;
+    }
+    if(bt.dataset.acao==='gravarCola'){
+      const out=li.querySelector('span.note:last-child');
+      try{ const c=lerCola(li.querySelector('textarea').value); if(!c){ out.textContent='Cole o texto primeiro.'; return; }
+        const upd={resultados:c.resultados}; if(c.analise) upd.analise=c.analise; if(c.lab&&!e.lab) upd.lab=c.lab;
+        await db.collection('exames').doc(id).update(upd); }
+      catch(x){ out.textContent=x.message||'Não consegui ler o texto.'; }
+    }
+  }
+  async function iniciar(){
+    if(!$('#examesPanel')) return;
+    $('#exNovoBtn').onclick=()=>{ const f=$('#exForm'); f.hidden=!f.hidden; if(!f.hidden&&!$('#exData').value) $('#exData').value=new Date().toISOString().slice(0,10); };
+    $('#exCancelar').onclick=()=>{ $('#exForm').reset(); $('#exForm').hidden=true; };
+    $('#exForm').addEventListener('submit',salvarNovo);
+    $('#exLista').addEventListener('click',acao);
+    try{ db=await window.claude.use('db'); }catch(e){ return; }
+    db.collection('exames').onSnapshot(sn=>{ exames=sn.docs.map(d=>Object.assign({id:d.id},d.data())); render(); });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',iniciar); else iniciar();
 })();
 </script>
