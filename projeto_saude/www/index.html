@@ -1195,7 +1195,9 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
     if(hi-lo<4){ const m=(hi+lo)/2; lo=m-2; hi=m+2; }
     lo=Math.floor(lo-1); hi=Math.ceil(hi+1);
     const ini=(plano.projetoInicio && plano.projetoInicio<pesos[0].data) ? plano.projetoInicio : pesos[0].data;
-    const t0=parse(ini).getTime(), t1=parse(pesos[pesos.length-1].data).getTime(), WK=7*86400000;
+    const apsC = plano.usaMounjaro===false ? [] : registros.filter(r=>r.tipo==='aplicacao'&&r.data&&r.data>=ini).sort((a,b)=>a.data.localeCompare(b.data));
+    const fimD = [pesos[pesos.length-1].data].concat(apsC.map(a=>a.data)).sort().pop();
+    const t0=parse(ini).getTime(), t1=parse(fimD).getTime(), WK=7*86400000;
     const nSem=Math.max(4, Math.ceil(((t1-t0)/WK+0.01)/4)*4), span=nSem*WK;
     const x=s=> L+(parse(s).getTime()-t0)/span*(W-L-R);
     const y=v=> T+(hi-v)/(hi-lo)*(H-T-B);
@@ -1215,10 +1217,13 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
     for(let k=0;k<=nSem;k++){ const d=iso(new Date(t0+k*WK+3600000)); const xx=x(d);
       if(k>0 && k<nSem) xl+=`<line x1="${xx}" x2="${xx}" y1="${T}" y2="${H-B}" stroke="var(--line)" stroke-dasharray="3 4"/>`;
       if(k<nSem && k%passo===0){ const xm=passo===1 ? (xx+x(iso(new Date(t0+(k+1)*WK+3600000))))/2 : xx; xl+=`<text x="${xm}" y="${H-8}" text-anchor="${passo===1?'middle':'start'}" font-size="12" fill="var(--muted)">Sem ${k+1}</text>`; } }
+    let doses='';
+    apsC.forEach(a=>{ const xx=x(a.data).toFixed(1); const d=String(a.dose!=null?a.dose:'').replace('.',',');
+      doses+=`<g class="dose-mk"><title>Mounjaro ${d} mg · ${fmtCurta(a.data)}</title><line x1="${xx}" x2="${xx}" y1="${T+12}" y2="${H-B}" stroke="#9FB7FF" stroke-width="1.5" stroke-dasharray="2 3" opacity=".9"/><rect x="${xx-14}" y="${T-6}" width="28" height="16" rx="8" fill="#9FB7FF"/><text x="${xx}" y="${T+6}" text-anchor="middle" font-size="10" font-weight="700" fill="#1b1e1b">${d||'💉'}</text></g>`; });
     const last=pts[pts.length-1], lv=pesos[pesos.length-1].kg;
     const dots=pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="var(--ink)"/>`).join('');
-    el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico da evolução do peso">${g}${area}<path d="${line}" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linejoin="round"/>${dots}<circle cx="${last[0]}" cy="${last[1]}" r="7" fill="var(--lime)" stroke="var(--ink)" stroke-width="2.5"/><text x="${last[0]>W-90?last[0]-12:last[0]+12}" y="${last[1]+5}" text-anchor="${last[0]>W-90?'end':'start'}" font-size="13" font-weight="700" fill="var(--ink)">${kg(lv)} kg</text>${xl}</svg>`;
-    $('#chartNote').textContent=pesos.length+(pesos.length===1?' registro':' registros')+' · kg';
+    el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico da evolução do peso">${g}${doses}${area}<path d="${line}" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linejoin="round"/>${dots}<circle cx="${last[0]}" cy="${last[1]}" r="7" fill="var(--lime)" stroke="var(--ink)" stroke-width="2.5"/><text x="${last[0]>W-90?last[0]-12:last[0]+12}" y="${last[1]+5}" text-anchor="${last[0]>W-90?'end':'start'}" font-size="13" font-weight="700" fill="var(--ink)">${kg(lv)} kg</text>${xl}</svg>`;
+    $('#chartNote').innerHTML=pesos.length+(pesos.length===1?' registro':' registros')+' · kg'+(apsC.length?' · <span style="color:#9FB7FF">▮</span> doses (mg)':'');
   }
 
   const ROT={peso:'Peso',aplicacao:'Aplicação',treino:'Treino',diario:'Efeitos',atividade:'Dia · Apple Watch'};

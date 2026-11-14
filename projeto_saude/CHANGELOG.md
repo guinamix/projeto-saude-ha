@@ -1,3 +1,6 @@
+## 2.1.0
+- Evolução do peso marca as doses de Mounjaro aplicadas (linha azul com a dose em mg).
+
 ## 2.0.1
 - Exames vira uma aba recolhível, logo abaixo das Metas.
 
