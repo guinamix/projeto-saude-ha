@@ -1,3 +1,6 @@
+## 2.2.0
+- Composição corporal: cápsula Meta de proteína, calculada pela altura e pelo peso atual (peso de referência × 1,2 a 1,5 g/kg).
+
 ## 2.1.0
 - Evolução do peso marca as doses de Mounjaro aplicadas (linha azul com a dose em mg).
 

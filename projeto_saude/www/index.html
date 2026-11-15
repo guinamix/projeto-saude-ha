@@ -1487,9 +1487,16 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
       if(k==='imc') extra=`<span class="note">altura ${String(plano.altura).replace('.',',')} cm</span>`;
       const val=k==='tmb'?Math.round(ult[k]).toLocaleString('pt-BR'):fmt(ult[k]);
       return `<button type="button" class="cp-tile${k===cpSel?' on':''}" data-k="${k}"><span class="eyebrow">${nome}</span><span class="sv-big num">${val}${u}</span>${extra}${pill}</button>`; }).join('');
+    let tProt='';
+    const altP=Number(plano.altura)||0, kgAtual=(bio.filter(r=>r.kg).pop()||{}).kg;
+    if(altP&&kgAtual){
+      const ideal=50+2.3*(altP/2.54-60), ajust=ideal+0.4*Math.max(0,kgAtual-ideal);
+      const r5=v=>Math.round(v/5)*5, lo=r5(ajust*1.2), hi=r5(ajust*1.5), meta=r5(ajust*1.25);
+      tProt=`<div class="cp-tile cp-fixo"><span class="eyebrow">Meta de proteína</span><span class="sv-big num">${meta} g/dia</span><span class="note">faixa de ${lo} a ${hi} g</span></div>`;
+    }
     const c=CP.find(x=>x[0]===cpSel), serie=bio.filter(r=>r[cpSel]);
     const aviso=plano.altura?'':'<p class="note">Coloque sua altura em <b>Plano do tratamento</b> para ver o IMC e o nível de obesidade.</p>';
-    box.innerHTML=`<div class="cp-grid">${tiles}</div>${aviso}<div class="cp-chart">${miniGrafico(serie.map(r=>({d:r.data,v:r[cpSel]})), c[2], c[1])}</div>`;
+    box.innerHTML=`<div class="cp-grid">${tiles}${tProt}</div>${aviso}<div class="cp-chart">${miniGrafico(serie.map(r=>({d:r.data,v:r[cpSel]})), c[2], c[1])}</div>`;
     box.querySelectorAll('button.cp-tile').forEach(b=>b.addEventListener('click',()=>{ cpSel=b.dataset.k; renderCorpo(); }));
   }
   function miniGrafico(pts, u, nome){
