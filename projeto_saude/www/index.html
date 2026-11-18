@@ -1003,10 +1003,8 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
         const aps=registros.filter(r=>r.tipo==='aplicacao').sort((a,b)=>a.data.localeCompare(b.data));
         const apsP=aps.filter(r=>r.data>=ini&&r.data<=t); const L=[];
         L.push(['Medicação','Mounjaro (tirzepatida)']);
-        if(plano.inicio) L.push(['Início',dl(plano.inicio)]);
-        if(aps.length){ const u=aps[aps.length-1]; L.push(['Dose atual',mg(u.dose)],['Aplicações',aps.length+(aps.length===1?' dose':' doses')+(per!=='inicio'?' · '+apsP.length+' no período':'')],['Última',dl(u.data)+(u.local?' · '+u.local:'')]); }
+        if(aps.length){ const u=aps[aps.length-1]; L.push(['1ª aplicação',dl(aps[0].data)],['Dose atual',mg(u.dose)],['Aplicações',aps.length+(aps.length===1?' dose':' doses')+(per!=='inicio'?' · '+apsP.length+' no período':'')],['Última',dl(u.data)+(u.local?' · '+u.local:'')]); }
         else L.push(['Aplicações','nenhuma registrada']);
-        const px=proximaAplicacao(); if(px) L.push(['Próxima',dl(px.data)+' · '+mg(px.dose)]);
         blocos.push({t:'Tratamento',c:'#5B7BD6',L});
       }
       // Atividade
@@ -1025,10 +1023,10 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
       // Exames
       try{ const st=await window.__haApi('api/state'); const ex=Object.entries(st.docs||{}).filter(([k])=>k.startsWith('exames/')).map(([,v])=>v).filter(e=>(e.resultados||[]).length).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
         if(ex.length){ const u=ex[ex.length-1]; const fora=u.resultados.filter(r=>{ const v=Number(String(r.valor).replace(',','.')); return isFinite(v)&&((r.max!=null&&v>r.max)||(r.min!=null&&v<r.min)); });
-          const L=[['Último exame',dl(u.data)+(u.lab?' · '+u.lab:'')]];
+          const L=[];
           if(fora.length) fora.slice(0,6).forEach(r=>{ const v=Number(String(r.valor).replace(',','.')); const ant=ex.length>1?(ex[ex.length-2].resultados||[]).find(x=>x.nome===r.nome):null; L.push([r.nome,(Math.round(v*100)/100).toLocaleString('pt-BR')+' '+(r.unidade||'')+(r.max!=null&&v>r.max?' ↑':' ↓')+(ant?'  (antes '+String(ant.valor).replace('.',',')+')':'')]); });
-          else L.push(['Resultados','todos dentro da referência']);
-          blocos.push({t:'Exames',c:'#4A90A8',L}); } }catch(e){}
+          else L.push(['Resultados','nenhum fora da referência']);
+          blocos.push({t:'Exames · '+dl(u.data),c:'#4A90A8',L}); } }catch(e){}
       // ---------- desenho ----------
       const W=1080, P=48, G=24, colW=(W-2*P-G)/2, rowH=44, headH=58, padB=18;
       const nome=(window.__nomeUser||'').trim().split(/\s+/)[0]||'';

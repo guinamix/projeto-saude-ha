@@ -1,3 +1,6 @@
+## 2.3.1
+- Relatório em imagem: tratamento só com as doses já aplicadas (sem datas previstas); exames só com os itens fora da referência.
+
 ## 2.3.0
 - Relatório para o médico: botão Gerar imagem, com título, blocos organizados (peso, composição, tratamento, atividade, sono, efeitos, exames) e gráfico do peso. Dá para baixar ou compartilhar.
 
