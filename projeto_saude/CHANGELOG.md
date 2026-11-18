@@ -1,3 +1,6 @@
+## 2.4.0
+- Relatório em imagem: bloco Bioimpedância comparando a semana passada com esta (peso, gordura, massa magra, músculo, visceral, água, IMC e TMB).
+
 ## 2.3.1
 - Relatório em imagem: tratamento só com as doses já aplicadas (sem datas previstas); exames só com os itens fora da referência.
 

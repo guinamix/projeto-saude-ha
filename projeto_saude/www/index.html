@@ -1027,10 +1027,22 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
           if(fora.length) fora.slice(0,6).forEach(r=>{ const v=Number(String(r.valor).replace(',','.')); const ant=ex.length>1?(ex[ex.length-2].resultados||[]).find(x=>x.nome===r.nome):null; L.push([r.nome,(Math.round(v*100)/100).toLocaleString('pt-BR')+' '+(r.unidade||'')+(r.max!=null&&v>r.max?' ↑':' ↓')+(ant?'  (antes '+String(ant.valor).replace('.',',')+')':'')]); });
           else L.push(['Resultados','nenhum fora da referência']);
           blocos.push({t:'Exames · '+dl(u.data),c:'#4A90A8',L}); } }catch(e){}
+      // Bioimpedância comparativa (semana passada x esta)
+      { const comp=todosP.map(corpoDe).filter(r=>r.gordura||r.magra||r.musculo);
+        const semIni=d=>{ const x=parse(d); x.setDate(x.getDate()-x.getDay()); return iso(x); };
+        const sAt=semIni(t), sAnt=(()=>{ const x=parse(sAt); x.setDate(x.getDate()-7); return iso(x); })();
+        let B=[...comp].reverse().find(r=>r.data>=sAt), A=[...comp].reverse().find(r=>r.data>=sAnt&&r.data<sAt);
+        let rotA='Sem. passada', rotB='Esta semana';
+        if(!B&&comp.length){ B=comp[comp.length-1]; rotB=fmtCurta(B.data); }
+        if(!A&&B){ A=[...comp].reverse().find(r=>r.data<B.data); if(A) rotA=fmtCurta(A.data); }
+        if(A&&B){ const it=[['Peso','kg',' kg',-1],['Gordura','gordura','%',-1],['Massa magra','magra',' kg',1],['Músculo','musculo',' kg',1],['Visceral','visceral','',-1],['Água','agua','%',1],['IMC','imc','',-1],['TMB','tmb',' kcal',0]];
+          const L=it.filter(([,k])=>A[k]!=null&&B[k]!=null).map(([n,k,u,bom])=>{ const f=v=>k==='tmb'?Math.round(v).toLocaleString('pt-BR'):n1(v); const d=B[k]-A[k];
+            return {n, a:f(A[k])+u, b:f(B[k])+u, d:Math.abs(d)<0.05?'=':(d<0?'−':'+')+(k==='tmb'?Math.round(Math.abs(d)):n1(Math.abs(d))), cor:Math.abs(d)<0.05||!bom?'#8A908A':(d*bom>0?'#5E8F1E':'#C2604B')}; });
+          if(L.length) blocos.push({t:'Bioimpedância',c:'#3E8E7E',cols:[rotA,rotB],L}); } }
       // ---------- desenho ----------
       const W=1080, P=48, G=24, colW=(W-2*P-G)/2, rowH=44, headH=58, padB=18;
       const nome=(window.__nomeUser||'').trim().split(/\s+/)[0]||'';
-      const altB=b=>headH+b.L.length*rowH+padB;
+      const altB=b=>headH+(b.cols?30:0)+b.L.length*rowH+padB;
       const linhas=[]; for(let i=0;i<blocos.length;i+=2) linhas.push([blocos[i],blocos[i+1]]);
       const chartH=todosP.length>1?340:0;
       let H=P+150+G; linhas.forEach(l=>{ H+=Math.max(...l.filter(Boolean).map(altB))+G; }); if(chartH) H+=chartH+G; H+=70;
@@ -1054,6 +1066,15 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
           rr(x,y,colW,h,24); c.fillStyle='#FFFFFF'; c.fill();
           c.fillStyle=b.c; rr(x+22,y+22,8,24,4); c.fill();
           c.fillStyle='#1E2420'; c.font='700 25px '+F; c.fillText(b.t,x+42,y+43);
+          if(b.cols){ const xa=x+colW*0.55, xb=x+colW*0.80, xd=x+colW-22;
+            c.fillStyle='#8A908A'; c.font='600 15px '+F; c.textAlign='right'; c.fillText(b.cols[0],xa,y+headH+16); c.fillText(b.cols[1],xb,y+headH+16); c.fillText('Δ',xd,y+headH+16); c.textAlign='left';
+            b.L.forEach((r,k)=>{ const yy=y+headH+30+k*rowH+28;
+              if(k>0){ c.strokeStyle='#ECEDE8'; c.lineWidth=1; c.beginPath(); c.moveTo(x+22,yy-28); c.lineTo(x+colW-22,yy-28); c.stroke(); }
+              c.fillStyle='#6B716B'; c.font='500 19px '+F; c.fillText(r.n,x+22,yy);
+              c.textAlign='right'; c.fillStyle='#6B716B'; c.font='500 19px '+F; c.fillText(r.a,xa,yy);
+              c.fillStyle='#1E2420'; c.font='600 19px '+F; c.fillText(r.b,xb,yy);
+              c.fillStyle=r.cor; c.font='700 18px '+F; c.fillText(r.d,xd,yy); c.textAlign='left'; });
+            return; }
           b.L.forEach((r,k)=>{ const yy=y+headH+k*rowH+28;
             if(k>0){ c.strokeStyle='#ECEDE8'; c.lineWidth=1; c.beginPath(); c.moveTo(x+22,yy-28); c.lineTo(x+colW-22,yy-28); c.stroke(); }
             c.fillStyle='#6B716B'; c.font='500 19px '+F; c.fillText(fit(r[0],colW*0.45,'500 19px '+F),x+22,yy);
