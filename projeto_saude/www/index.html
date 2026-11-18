@@ -435,6 +435,12 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
 .ex-lista textarea{flex-basis:100%}
 .ex-leg{font-size:.75rem;color:var(--muted);margin:0}
 @media (max-width:560px){.ex-grid{grid-template-columns:1fr}}
+
+.rel-img{display:flex;flex-direction:column;gap:10px}
+.rel-img[hidden]{display:none}
+.rel-img img{width:100%;max-width:720px;border-radius:18px;box-shadow:0 6px 24px rgba(0,0,0,.3);background:#fff}
+.rel-img-acoes{display:flex;gap:10px;flex-wrap:wrap}
+.rel-img-acoes .btn{text-decoration:none;display:inline-flex;align-items:center;height:44px;padding:0 20px}
 </style>
 
 <div id="importando" role="status" aria-live="polite" hidden><div class="imp-card"><span class="imp-spin" aria-hidden="true"></span><span>Importando dados do iPhone…</span></div></div>
@@ -701,6 +707,11 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
             <select id="rel-periodo"><option value="inicio">Desde o início</option><option value="30">Últimos 30 dias</option><option value="7">Últimos 7 dias</option></select>
           </label>
           <button type="button" class="btn" id="relCopiar" style="height:48px;padding:0 22px">Copiar relatório</button>
+          <button type="button" class="btn lime" id="relImagem" style="height:48px;padding:0 22px">Gerar imagem</button>
+        </div>
+        <div class="rel-img" id="relImgBox" hidden>
+          <img id="relImg" alt="Relatório do Projeto Saúde em imagem">
+          <div class="rel-img-acoes"><a class="btn lime" id="relBaixar" download="projeto-saude.png">Baixar imagem</a><button type="button" class="btn ghost" id="relCompart" hidden>Compartilhar</button></div>
         </div>
         <div class="rel" id="rel"></div>
         <textarea class="rel-copy" id="relTexto" readonly hidden aria-label="Texto do relatório"></textarea>
@@ -953,6 +964,134 @@ section.panel.solto > .panel-head h2{font-size:1.2rem}
 
   // ---- Relatório para o médico ----
   let relTextoAtual='';
+
+  /* ===== Relatório em imagem ===== */
+  async function gerarImagemRelatorio(){
+    const bt=$('#relImagem'); bt.disabled=true; bt.textContent='Gerando…';
+    try{
+      try{ await document.fonts.ready; }catch(e){}
+      const t=hoje(); const per=$('#rel-periodo').value;
+      let ini; if(per==='inicio'){ const ds=registros.map(r=>r.data).filter(Boolean).sort(); ini=plano.projetoInicio||(ds[0]||t); }
+      else { const d=parse(t); d.setDate(d.getDate()-Number(per)+1); ini=iso(d); }
+      const dl=x=>parse(x).toLocaleDateString('pt-BR');
+      const n1=v=>(Math.round(v*10)/10).toLocaleString('pt-BR');
+      const todosP=registros.filter(r=>r.tipo==='peso').sort((a,b)=>a.data.localeCompare(b.data));
+      const R=registros.filter(r=>r.data>=ini&&r.data<=t);
+      const pesos=R.filter(r=>r.tipo==='peso').sort((a,b)=>a.data.localeCompare(b.data));
+      const blocos=[];
+      // Peso
+      if(todosP.length){
+        const base=Number(plano.pesoInicial)||todosP[0].kg, at=todosP[todosP.length-1];
+        const L=[['Peso inicial',kg(base)+' kg'],['Peso atual',kg(at.kg)+' kg · '+dl(at.data)],['Variação',(at.kg-base<=0?'−':'+')+kg(Math.abs(at.kg-base))+' kg']];
+        if(plano.meta){ const tot=base-plano.meta, pc=tot>0?Math.max(0,Math.min(100,(base-at.kg)/tot*100)):0; L.push(['Meta',kg(Number(plano.meta))+' kg'],['Progresso',Math.round(pc)+'% da meta']); }
+        if(pesos.length>1){ const a=pesos[0],z=pesos[pesos.length-1]; L.push(['No período',(z.kg-a.kg<=0?'−':'+')+kg(Math.abs(z.kg-a.kg))+' kg']); }
+        blocos.push({t:'Peso',c:'#7FA82E',L});
+      }
+      // Composição
+      const bio=todosP.map(corpoDe).filter(r=>r.gordura||r.magra||r.imc);
+      if(bio.length){ const u=bio[bio.length-1]; const L=[];
+        if(u.imc) L.push(['IMC',n1(u.imc)+' · '+u.nivel]);
+        const ug=[...bio].reverse().find(r=>r.gordura); if(ug) L.push(['Gordura corporal',n1(ug.gordura)+'% · '+n1(ug.kg*ug.gordura/100)+' kg']);
+        const um=[...bio].reverse().find(r=>r.magra); if(um) L.push(['Massa magra',n1(um.magra)+' kg']);
+        const umu=[...bio].reverse().find(r=>r.musculo); if(umu) L.push(['Músculo',n1(umu.musculo)+' kg']);
+        const uv=[...bio].reverse().find(r=>r.visceral); if(uv) L.push(['Gordura visceral',n1(uv.visceral)]);
+        const ua=[...bio].reverse().find(r=>r.agua); if(ua) L.push(['Água',n1(ua.agua)+'%']);
+        const ut=[...bio].reverse().find(r=>r.tmb); if(ut) L.push(['TMB',Math.round(ut.tmb).toLocaleString('pt-BR')+' kcal']);
+        blocos.push({t:'Composição corporal',c:'#3E8E7E',L}); }
+      // Tratamento
+      if(plano.usaMounjaro!==false){
+        const aps=registros.filter(r=>r.tipo==='aplicacao').sort((a,b)=>a.data.localeCompare(b.data));
+        const apsP=aps.filter(r=>r.data>=ini&&r.data<=t); const L=[];
+        L.push(['Medicação','Mounjaro (tirzepatida)']);
+        if(plano.inicio) L.push(['Início',dl(plano.inicio)]);
+        if(aps.length){ const u=aps[aps.length-1]; L.push(['Dose atual',mg(u.dose)],['Aplicações',aps.length+(aps.length===1?' dose':' doses')+(per!=='inicio'?' · '+apsP.length+' no período':'')],['Última',dl(u.data)+(u.local?' · '+u.local:'')]); }
+        else L.push(['Aplicações','nenhuma registrada']);
+        const px=proximaAplicacao(); if(px) L.push(['Próxima',dl(px.data)+' · '+mg(px.dose)]);
+        blocos.push({t:'Tratamento',c:'#5B7BD6',L});
+      }
+      // Atividade
+      const ats=R.filter(r=>r.tipo==='atividade'&&(r.passos||r.km||r.min));
+      if(ats.length){ const m=k=>ats.reduce((a,r)=>a+(r[k]||0),0)/ats.length;
+        blocos.push({t:'Atividade',c:'#C98A2E',L:[['Passos (média/dia)',Math.round(m('passos')).toLocaleString('pt-BR')],['Distância (média/dia)',n1(m('km'))+' km'],['Exercício (média/dia)',Math.round(m('min'))+' min'],['Dias com dados',String(ats.length)]]}); }
+      // Sono
+      const sn=R.filter(r=>r.tipo==='atividade'&&r.sonoTotal);
+      if(sn.length){ const md=Math.round(sn.reduce((a,r)=>a+(r.sono||0),0)/sn.length), nt=Math.round(sn.reduce((a,r)=>a+notaSono(r).pts,0)/sn.length);
+        const pf=Math.round(sn.reduce((a,r)=>a+(r.sonoProf||0),0)/sn.length), rm=Math.round(sn.reduce((a,r)=>a+(r.sonoRem||0),0)/sn.length);
+        blocos.push({t:'Sono',c:'#7B5EA7',L:[['Média dormindo',hhmm(md)+' por noite'],['Sono profundo (média)',hhmm(pf)],['REM (média)',hhmm(rm)],['Nota média',nt+' de 100'],['Noites registradas',String(sn.length)]]}); }
+      // Efeitos
+      const efs=R.filter(r=>r.tipo==='diario'); const cont={}; efs.forEach(e=>(e.efeitos||[]).forEach(x=>{ cont[x]=(cont[x]||0)+1; }));
+      const efL=Object.entries(cont).sort((a,b)=>b[1]-a[1]).map(([k,v])=>[k,v+(v===1?' dia':' dias')]);
+      if(efs.length) blocos.push({t:'Efeitos colaterais',c:'#C2604B',L:efL.length?efL.slice(0,7):[['Registros','sem efeitos relatados']]});
+      // Exames
+      try{ const st=await window.__haApi('api/state'); const ex=Object.entries(st.docs||{}).filter(([k])=>k.startsWith('exames/')).map(([,v])=>v).filter(e=>(e.resultados||[]).length).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+        if(ex.length){ const u=ex[ex.length-1]; const fora=u.resultados.filter(r=>{ const v=Number(String(r.valor).replace(',','.')); return isFinite(v)&&((r.max!=null&&v>r.max)||(r.min!=null&&v<r.min)); });
+          const L=[['Último exame',dl(u.data)+(u.lab?' · '+u.lab:'')]];
+          if(fora.length) fora.slice(0,6).forEach(r=>{ const v=Number(String(r.valor).replace(',','.')); const ant=ex.length>1?(ex[ex.length-2].resultados||[]).find(x=>x.nome===r.nome):null; L.push([r.nome,(Math.round(v*100)/100).toLocaleString('pt-BR')+' '+(r.unidade||'')+(r.max!=null&&v>r.max?' ↑':' ↓')+(ant?'  (antes '+String(ant.valor).replace('.',',')+')':'')]); });
+          else L.push(['Resultados','todos dentro da referência']);
+          blocos.push({t:'Exames',c:'#4A90A8',L}); } }catch(e){}
+      // ---------- desenho ----------
+      const W=1080, P=48, G=24, colW=(W-2*P-G)/2, rowH=44, headH=58, padB=18;
+      const nome=(window.__nomeUser||'').trim().split(/\s+/)[0]||'';
+      const altB=b=>headH+b.L.length*rowH+padB;
+      const linhas=[]; for(let i=0;i<blocos.length;i+=2) linhas.push([blocos[i],blocos[i+1]]);
+      const chartH=todosP.length>1?340:0;
+      let H=P+150+G; linhas.forEach(l=>{ H+=Math.max(...l.filter(Boolean).map(altB))+G; }); if(chartH) H+=chartH+G; H+=70;
+      const cv=document.createElement('canvas'); const sc=2; cv.width=W*sc; cv.height=H*sc; const c=cv.getContext('2d'); c.scale(sc,sc);
+      const F='Outfit, "Avenir Next", system-ui, sans-serif';
+      const rr=(x,y,w,h,r)=>{ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); };
+      c.fillStyle='#F3F4EF'; c.fillRect(0,0,W,H);
+      // cabeçalho
+      rr(P,P,W-2*P,150,28); c.fillStyle='#2B312D'; c.fill();
+      c.fillStyle='#B5D45A'; c.font='700 44px '+F; c.fillText('Projeto Saúde'+(nome?' – '+nome:''),P+36,P+70);
+      c.fillStyle='#C9CEC6'; c.font='500 22px '+F;
+      const perTxt=per==='inicio'?'Desde o início ('+dl(ini)+')':'Últimos '+per+' dias ('+dl(ini)+' a '+dl(t)+')';
+      c.fillText('Relatório para o médico · '+perTxt,P+36,P+112);
+      c.textAlign='right'; c.fillText('Gerado em '+dl(t),W-P-36,P+112);
+      if(plano.projetoInicio){ const dd=dias(plano.projetoInicio,t)+1; c.fillStyle='#B5D45A'; c.font='600 22px '+F; c.fillText('Dia '+dd+' do projeto',W-P-36,P+70); }
+      c.textAlign='left';
+      let y=P+150+G;
+      const fit=(txt,max,font)=>{ c.font=font; if(c.measureText(txt).width<=max) return txt; let s2=txt; while(s2.length>3&&c.measureText(s2+'…').width>max) s2=s2.slice(0,-1); return s2+'…'; };
+      linhas.forEach(l=>{ const h=Math.max(...l.filter(Boolean).map(altB));
+        l.forEach((b,i)=>{ if(!b) return; const x=P+i*(colW+G);
+          rr(x,y,colW,h,24); c.fillStyle='#FFFFFF'; c.fill();
+          c.fillStyle=b.c; rr(x+22,y+22,8,24,4); c.fill();
+          c.fillStyle='#1E2420'; c.font='700 25px '+F; c.fillText(b.t,x+42,y+43);
+          b.L.forEach((r,k)=>{ const yy=y+headH+k*rowH+28;
+            if(k>0){ c.strokeStyle='#ECEDE8'; c.lineWidth=1; c.beginPath(); c.moveTo(x+22,yy-28); c.lineTo(x+colW-22,yy-28); c.stroke(); }
+            c.fillStyle='#6B716B'; c.font='500 19px '+F; c.fillText(fit(r[0],colW*0.45,'500 19px '+F),x+22,yy);
+            c.textAlign='right'; c.fillStyle='#1E2420'; const vf='600 20px '+F; c.fillText(fit(String(r[1]),colW*0.52,vf),x+colW-22,yy); c.textAlign='left'; });
+        }); y+=h+G; });
+      // gráfico
+      if(chartH){ rr(P,y,W-2*P,chartH,24); c.fillStyle='#FFFFFF'; c.fill();
+        c.fillStyle='#7FA82E'; rr(P+22,y+22,8,24,4); c.fill(); c.fillStyle='#1E2420'; c.font='700 25px '+F; c.fillText('Evolução do peso',P+42,y+43);
+        const gx=P+70, gy=y+80, gw=W-2*P-110, gh=chartH-130;
+        const v=todosP.map(r=>r.kg); let lo=Math.floor(Math.min(...v)-1), hi=Math.ceil(Math.max(...v)+1);
+        const t0=parse(todosP[0].data).getTime(), t1=Math.max(parse(todosP[todosP.length-1].data).getTime(),t0+86400000);
+        const X=d=>gx+(parse(d).getTime()-t0)/(t1-t0)*gw, Y=k=>gy+(hi-k)/(hi-lo)*gh;
+        c.font='500 16px '+F; c.fillStyle='#8A908A'; const st=Math.max(1,Math.ceil((hi-lo)/5));
+        for(let k=Math.ceil(lo/st)*st;k<=hi;k+=st){ c.strokeStyle='#EEEFEA'; c.beginPath(); c.moveTo(gx,Y(k)); c.lineTo(gx+gw,Y(k)); c.stroke(); c.textAlign='right'; c.fillText(String(k),gx-10,Y(k)+5); }
+        c.textAlign='left';
+        if(plano.usaMounjaro!==false) registros.filter(r=>r.tipo==='aplicacao'&&r.data>=todosP[0].data&&r.data<=todosP[todosP.length-1].data).forEach(a=>{ const xx=X(a.data); c.strokeStyle='#9FB7FF'; c.setLineDash([4,5]); c.beginPath(); c.moveTo(xx,gy); c.lineTo(xx,gy+gh); c.stroke(); c.setLineDash([]); c.fillStyle='#5B7BD6'; c.font='700 13px '+F; c.textAlign='center'; c.fillText(String(a.dose).replace('.',',')+' mg',xx,gy-8); c.textAlign='left'; });
+        c.beginPath(); todosP.forEach((r,i)=>{ const px=X(r.data),py=Y(r.kg); i?c.lineTo(px,py):c.moveTo(px,py); });
+        c.strokeStyle='#2B312D'; c.lineWidth=3; c.lineJoin='round'; c.stroke(); c.lineWidth=1;
+        todosP.forEach(r=>{ c.beginPath(); c.arc(X(r.data),Y(r.kg),4,0,7); c.fillStyle='#2B312D'; c.fill(); });
+        const z=todosP[todosP.length-1]; c.beginPath(); c.arc(X(z.data),Y(z.kg),8,0,7); c.fillStyle='#B5D45A'; c.fill(); c.strokeStyle='#2B312D'; c.lineWidth=3; c.stroke(); c.lineWidth=1;
+        c.fillStyle='#1E2420'; c.font='700 18px '+F; c.textAlign='right'; c.fillText(kg(z.kg)+' kg',X(z.data)-14,Y(z.kg)-14);
+        c.textAlign='left'; c.fillStyle='#8A908A'; c.font='500 16px '+F; c.fillText(dl(todosP[0].data),gx,gy+gh+30); c.textAlign='right'; c.fillText(dl(z.data),gx+gw,gy+gh+30); c.textAlign='left';
+        y+=chartH+G; }
+      c.fillStyle='#9AA09A'; c.font='500 16px '+F; c.textAlign='center';
+      c.fillText('Dados do Apple Watch, da balança de bioimpedância e registros do paciente. Projeto Saúde.',W/2,H-36); c.textAlign='left';
+      const blob=await new Promise(r=>cv.toBlob(r,'image/png'));
+      const url=URL.createObjectURL(blob);
+      $('#relImg').src=url; const a=$('#relBaixar'); a.href=url; a.download='projeto-saude-'+t+'.png';
+      $('#relImgBox').hidden=false;
+      const file=new File([blob],'projeto-saude-'+t+'.png',{type:'image/png'});
+      const cs=$('#relCompart');
+      if(navigator.canShare&&navigator.canShare({files:[file]})){ cs.hidden=false; cs.onclick=()=>navigator.share({files:[file],title:'Projeto Saúde'}).catch(()=>{}); } else cs.hidden=true;
+    }catch(e){ console.error(e); $('#relMsg').textContent='Não consegui gerar a imagem.'; }
+    bt.disabled=false; bt.textContent='Gerar imagem';
+  }
+  $('#relImagem').addEventListener('click',gerarImagemRelatorio);
   function renderRelatorio(){
     const box=$('#rel'); if(!box) return;
     const t=hoje(); const per=$('#rel-periodo').value;

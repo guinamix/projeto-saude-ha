@@ -1,3 +1,6 @@
+## 2.3.0
+- Relatório para o médico: botão Gerar imagem, com título, blocos organizados (peso, composição, tratamento, atividade, sono, efeitos, exames) e gráfico do peso. Dá para baixar ou compartilhar.
+
 ## 2.2.0
 - Composição corporal: cápsula Meta de proteína, calculada pela altura e pelo peso atual (peso de referência × 1,2 a 1,5 g/kg).
 
